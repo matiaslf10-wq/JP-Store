@@ -884,7 +884,7 @@ export default function TiendaPublica() {
                           border:
                             imagenActual === idx
                               ? '3px solid #4CAF50'
-                              : '2px solid '#ddd',
+                              : '2px solid #ddd',
                           opacity: imagenActual === idx ? 1 : 0.6,
                         }}
                       />

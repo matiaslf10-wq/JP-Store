@@ -632,22 +632,23 @@ export default function TiendaPublica() {
                       objectFit: 'cover',
                     }}
                   />
-                  {producto.imagenes?.length > 1 && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        right: '10px',
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                      }}
-                    >
-                      📷 {producto.imagenes.length}
-                    </span>
-                  )}
+{(producto.imagenes?.length ?? 0) > 1 && (
+  <span
+    style={{
+      position: 'absolute',
+      bottom: '10px',
+      right: '10px',
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      color: 'white',
+      padding: '4px 8px',
+      borderRadius: '4px',
+      fontSize: '12px',
+    }}
+  >
+    📷 {producto.imagenes?.length ?? 0}
+  </span>
+)}
+
                   {producto.subcategoria && (
                     <span
                       style={{

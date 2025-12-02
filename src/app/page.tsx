@@ -820,66 +820,66 @@ export default function TiendaPublica() {
                     }}
                   />
 
-                  {productoSeleccionado.imagenes?.length > 1 && (
-                    <>
-                      <button
-                        onClick={anteriorImagen}
-                        style={{
-                          position: 'absolute',
-                          left: '10px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          border: 'none',
-                          backgroundColor: 'rgba(255,255,255,0.9)',
-                          fontSize: '20px',
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                        }}
-                      >
-                        ‹
-                      </button>
-                      <button
-                        onClick={siguienteImagen}
-                        style={{
-                          position: 'absolute',
-                          right: '10px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          border: 'none',
-                          backgroundColor: 'rgba(255,255,255,0.9)',
-                          fontSize: '20px',
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                        }}
-                      >
-                        ›
-                      </button>
+                  {(productoSeleccionado.imagenes?.length ?? 0) > 1 && (
+  <>
+    <button
+      onClick={anteriorImagen}
+      style={{
+        position: 'absolute',
+        left: '10px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: '40px',
+        height: '40px',
+        borderRadius: '50%',
+        border: 'none',
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        fontSize: '20px',
+        cursor: 'pointer',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+      }}
+    >
+      ‹
+    </button>
 
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: '10px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          backgroundColor: 'rgba(0,0,0,0.5)',
-                          color: 'white',
-                          padding: '4px 12px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                        }}
-                      >
-                        {imagenActual + 1} /{' '}
-                        {productoSeleccionado.imagenes?.length ?? 0}
-                      </div>
-                    </>
-                  )}
-                </div>
+    <button
+      onClick={siguienteImagen}
+      style={{
+        position: 'absolute',
+        right: '10px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: '40px',
+        height: '40px',
+        borderRadius: '50%',
+        border: 'none',
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        fontSize: '20px',
+        cursor: 'pointer',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+      }}
+    >
+      ›
+    </button>
+
+    <div
+      style={{
+        position: 'absolute',
+        bottom: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        color: 'white',
+        padding: '4px 12px',
+        borderRadius: '12px',
+        fontSize: '12px',
+      }}
+    >
+      {imagenActual + 1} / {(productoSeleccionado.imagenes?.length ?? 0)}
+    </div>
+  </>
+)}
+
 
                 {productoSeleccionado.imagenes?.length > 1 && (
                   <div

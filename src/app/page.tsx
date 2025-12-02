@@ -8,21 +8,45 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Tipo fuerte para los productos
+type Producto = {
+  id: string | number;
+  nombre: string;
+  descripcion?: string | null;
+  precio: number | string;
+  imagenes?: string[];
+  tipo_talle?: string; // 'ropa' | 'calzado' | 'sin_talle' | otro
+  categoria?: string | null;
+  subcategoria?: string | null;
+  talles?: string[];
+  created_at?: string;
+};
+
+type CategoriasConfig = Record<
+  string,
+  {
+    nombre: string;
+    subcategorias: string[];
+  }
+>;
+
 export default function TiendaPublica() {
-  const [productos, setProductos] = useState<any[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState('');
-  const [productoSeleccionado, setProductoSeleccionado] = useState<any | null>(null);
+  const [productoSeleccionado, setProductoSeleccionado] =
+    useState<Producto | null>(null);
   const [imagenActual, setImagenActual] = useState(0);
   const [sidebarAbierto, setSidebarAbierto] = useState(false);
-  const [categoriaExpandida, setCategoriaExpandida] = useState<string | null>(null);
+  const [categoriaExpandida, setCategoriaExpandida] = useState<string | null>(
+    null
+  );
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
-  const [filtroSubcategoria, setFiltroSubcategoria] = useState<string | null>(null);
+  const [filtroSubcategoria, setFiltroSubcategoria] = useState<string | null>(
+    null
+  );
 
-  const categorias: Record<
-    string,
-    { nombre: string; subcategorias: string[] }
-  > = {
+  const categorias: CategoriasConfig = {
     ropa: {
       nombre: '👕 Ropa',
       subcategorias: ['Hombre', 'Mujer', 'Niños'],
@@ -45,7 +69,7 @@ export default function TiendaPublica() {
     cargarProductos();
   }, []);
 
-  const cargarProductos = async () => {
+  const cargarProductos = async (): Promise<void> => {
     try {
       setCargando(true);
       const { data, error } = await supabase
@@ -55,7 +79,7 @@ export default function TiendaPublica() {
 
       if (error) throw error;
 
-      setProductos(data || []);
+      setProductos((data ?? []) as Producto[]);
       setCargando(false);
     } catch (error) {
       console.error('Error al cargar productos:', error);
@@ -63,7 +87,7 @@ export default function TiendaPublica() {
     }
   };
 
-  const abrirModal = (producto: any) => {
+  const abrirModal = (producto: Producto) => {
     setProductoSeleccionado(producto);
     setImagenActual(0);
     if (typeof document !== 'undefined') {
@@ -115,7 +139,7 @@ export default function TiendaPublica() {
     setBusqueda('');
   };
 
-  const productosFiltrados = productos.filter((producto: any) => {
+  const productosFiltrados = productos.filter((producto: Producto) => {
     const nombre = (producto.nombre || '').toLowerCase();
     const textoBusqueda = busqueda.toLowerCase();
 
@@ -125,7 +149,8 @@ export default function TiendaPublica() {
       !filtroCategoria ||
       (filtroCategoria === 'ropa' && producto.tipo_talle === 'ropa') ||
       (filtroCategoria === 'calzado' && producto.tipo_talle === 'calzado') ||
-      (filtroCategoria === 'accesorios' && producto.tipo_talle === 'sin_talle');
+      (filtroCategoria === 'accesorios' &&
+        producto.tipo_talle === 'sin_talle');
 
     const cumpleSubcategoria =
       !filtroSubcategoria || producto.subcategoria === filtroSubcategoria;
@@ -552,7 +577,7 @@ export default function TiendaPublica() {
               gap: '25px',
             }}
           >
-            {productosFiltrados.map((producto: any) => (
+            {productosFiltrados.map((producto) => (
               <div
                 key={producto.id}
                 onClick={() => abrirModal(producto)}
@@ -664,7 +689,7 @@ export default function TiendaPublica() {
                       display: 'block',
                     }}
                   >
-                    ${parseFloat(producto.precio).toFixed(2)}
+                    ${parseFloat(String(producto.precio)).toFixed(2)}
                   </span>
 
                   {/* Botón WhatsApp por producto */}
@@ -681,7 +706,7 @@ export default function TiendaPublica() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '8px',
-                        padding: '1px 4px',
+                        padding: '6px 10px',
                         backgroundColor: '#25D366',
                         color: 'white',
                         borderRadius: '999px',
@@ -695,7 +720,7 @@ export default function TiendaPublica() {
                       <img
                         src="/whatsappicon.png"
                         alt="WhatsApp"
-                        style={{ width: '30px', height: '30px' }}
+                        style={{ width: '22px', height: '22px' }}
                       />
                       <span>Consultar por WhatsApp</span>
                     </a>
@@ -833,7 +858,8 @@ export default function TiendaPublica() {
                           fontSize: '12px',
                         }}
                       >
-                        {imagenActual + 1} / {productoSeleccionado.imagenes.length}
+                        {imagenActual + 1} /{' '}
+                        {productoSeleccionado.imagenes.length}
                       </div>
                     </>
                   )}
@@ -843,28 +869,26 @@ export default function TiendaPublica() {
                   <div
                     style={{ display: 'flex', gap: '10px', overflowX: 'auto' }}
                   >
-                    {productoSeleccionado.imagenes.map(
-                      (img: string, idx: number) => (
-                        <img
-                          key={idx}
-                          src={img}
-                          alt={`Vista ${idx + 1}`}
-                          onClick={() => setImagenActual(idx)}
-                          style={{
-                            width: '80px',
-                            height: '80px',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            border:
-                              imagenActual === idx
-                                ? '3px solid #4CAF50'
-                                : '2px solid #ddd',
-                            opacity: imagenActual === idx ? 1 : 0.6,
-                          }}
-                        />
-                      )
-                    )}
+                    {productoSeleccionado.imagenes.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img}
+                        alt={`Vista ${idx + 1}`}
+                        onClick={() => setImagenActual(idx)}
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          border:
+                            imagenActual === idx
+                              ? '3px solid #4CAF50'
+                              : '2px solid '#ddd',
+                          opacity: imagenActual === idx ? 1 : 0.6,
+                        }}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
@@ -889,7 +913,7 @@ export default function TiendaPublica() {
                     margin: '0 0 20px 0',
                   }}
                 >
-                  ${parseFloat(productoSeleccionado.precio).toFixed(2)}
+                  ${parseFloat(String(productoSeleccionado.precio)).toFixed(2)}
                 </p>
 
                 {productoSeleccionado.categoria && (
@@ -961,13 +985,15 @@ export default function TiendaPublica() {
                       >
                         {productoSeleccionado.talles
                           .slice()
-                          .sort((a: string, b: string) => {
-                            if (productoSeleccionado.tipo_talle === 'calzado') {
+                          .sort((a, b) => {
+                            if (
+                              productoSeleccionado.tipo_talle === 'calzado'
+                            ) {
                               return parseInt(a) - parseInt(b);
                             }
                             return 0;
                           })
-                          .map((talle: string) => (
+                          .map((talle) => (
                             <span
                               key={talle}
                               style={{
@@ -999,7 +1025,7 @@ export default function TiendaPublica() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      padding: '1px 10px',
+                      padding: '6px 12px',
                       backgroundColor: '#25D366',
                       color: 'white',
                       borderRadius: '999px',
@@ -1013,7 +1039,7 @@ export default function TiendaPublica() {
                     <img
                       src="/whatsappicon.png"
                       alt="WhatsApp"
-                      style={{ width: '80px', height: '80px' }}
+                      style={{ width: '24px', height: '24px' }}
                     />
                     <span>Consultar por WhatsApp</span>
                   </a>
@@ -1048,7 +1074,7 @@ export default function TiendaPublica() {
         <img
           src="/whatsappicon.png"
           alt="WhatsApp"
-          style={{ width: '60px', height: '60px' }}
+          style={{ width: '35px', height: '35px' }}
         />
       </a>
 

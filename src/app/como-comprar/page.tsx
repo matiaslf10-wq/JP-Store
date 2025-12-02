@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function ComoComprarPage() {
   return (
     <main
@@ -20,7 +22,7 @@ export default function ComoComprarPage() {
       >
 
                 <div style={{ marginBottom: '20px', textAlign: 'left' }}>
-          <a
+          <Link
             href="/"
             style={{
               color: '#4CAF50',
@@ -30,7 +32,7 @@ export default function ComoComprarPage() {
             }}
           >
             ← Volver a la tienda
-          </a>
+          </Link>
         </div>
 
         {/* Logo grande arriba, centrado */}

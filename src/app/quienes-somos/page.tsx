@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Link from 'next/link';
+
 
 export default function QuienesSomosPage() {
   const instagramRef = useRef<HTMLDivElement | null>(null);
@@ -47,7 +49,7 @@ export default function QuienesSomosPage() {
       >
         {/* Botón volver a la tienda */}
         <div style={{ marginBottom: '20px', textAlign: 'left' }}>
-          <a
+          <Link
             href="/"
             style={{
               color: '#4CAF50',
@@ -57,7 +59,7 @@ export default function QuienesSomosPage() {
             }}
           >
             ← Volver a la tienda
-          </a>
+          </Link>
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
@@ -140,7 +142,7 @@ export default function QuienesSomosPage() {
           <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>
             Mirá más contenido
           </h2>
-          <a
+          <Link
             href="https://www.instagram.com/jpstore/"
             target="_blank"
             rel="noopener noreferrer"
@@ -157,7 +159,7 @@ export default function QuienesSomosPage() {
             }}
           >
             Ver Instagram de JP Store
-          </a>
+          </Link>
         </section>
       </div>
     </main>

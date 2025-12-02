@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import Link from 'next/link';
+
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -184,7 +186,7 @@ export default function AdminLogin() {
           marginTop: '30px',
           textAlign: 'center'
         }}>
-          <a
+          <Link
             href="/"
             style={{
               color: '#666',
@@ -193,7 +195,7 @@ export default function AdminLogin() {
             }}
           >
             ← Volver a la tienda
-          </a>
+          </Link>
         </div>
       </div>
     </div>

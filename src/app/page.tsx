@@ -810,7 +810,10 @@ export default function TiendaPublica() {
               <div>
                 <div style={{ position: 'relative', marginBottom: '15px' }}>
                   <img
-                    src={productoSeleccionado.imagenes?.[imagenActual]}
+                    src={
+                      productoSeleccionado.imagenes?.[imagenActual] ||
+                      '/placeholder.jpg'
+                    }
                     alt={productoSeleccionado.nombre}
                     style={{
                       width: '100%',
@@ -821,71 +824,76 @@ export default function TiendaPublica() {
                   />
 
                   {(productoSeleccionado.imagenes?.length ?? 0) > 1 && (
-  <>
-    <button
-      onClick={anteriorImagen}
-      style={{
-        position: 'absolute',
-        left: '10px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        border: 'none',
-        backgroundColor: 'rgba(255,255,255,0.9)',
-        fontSize: '20px',
-        cursor: 'pointer',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-      }}
-    >
-      ‹
-    </button>
+                    <>
+                      <button
+                        onClick={anteriorImagen}
+                        style={{
+                          position: 'absolute',
+                          left: '10px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          border: 'none',
+                          backgroundColor: 'rgba(255,255,255,0.9)',
+                          fontSize: '20px',
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        }}
+                      >
+                        ‹
+                      </button>
 
-    <button
-      onClick={siguienteImagen}
-      style={{
-        position: 'absolute',
-        right: '10px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        border: 'none',
-        backgroundColor: 'rgba(255,255,255,0.9)',
-        fontSize: '20px',
-        cursor: 'pointer',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-      }}
-    >
-      ›
-    </button>
+                      <button
+                        onClick={siguienteImagen}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          border: 'none',
+                          backgroundColor: 'rgba(255,255,255,0.9)',
+                          fontSize: '20px',
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        }}
+                      >
+                        ›
+                      </button>
 
-    <div
-      style={{
-        position: 'absolute',
-        bottom: '10px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        color: 'white',
-        padding: '4px 12px',
-        borderRadius: '12px',
-        fontSize: '12px',
-      }}
-    >
-      {imagenActual + 1} / {(productoSeleccionado.imagenes?.length ?? 0)}
-    </div>
-  </>
-)}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '10px',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                        }}
+                      >
+                        {imagenActual + 1} /{' '}
+                        {productoSeleccionado.imagenes?.length ?? 0}
+                      </div>
+                    </>
+                  )}
+                </div>
 
-
-                {productoSeleccionado.imagenes?.length > 1 && (
+                {(productoSeleccionado.imagenes?.length ?? 0) > 1 && (
                   <div
-                    style={{ display: 'flex', gap: '10px', overflowX: 'auto' }}
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      overflowX: 'auto',
+                    }}
                   >
-                    {productoSeleccionado.imagenes.map((img, idx) => (
+                    {productoSeleccionado.imagenes!.map((img, idx) => (
                       <img
                         key={idx}
                         src={img}
@@ -929,7 +937,10 @@ export default function TiendaPublica() {
                     margin: '0 0 20px 0',
                   }}
                 >
-                  ${parseFloat(String(productoSeleccionado.precio)).toFixed(2)}
+                  $
+                  {parseFloat(
+                    String(productoSeleccionado.precio)
+                  ).toFixed(2)}
                 </p>
 
                 {productoSeleccionado.categoria && (
@@ -978,7 +989,7 @@ export default function TiendaPublica() {
                 )}
 
                 {productoSeleccionado.tipo_talle !== 'sin_talle' &&
-                  (productoSeleccionado.talles?.length ?? 0) > 0 && (
+                  productoSeleccionado.talles?.length > 0 && (
                     <div style={{ marginBottom: '20px' }}>
                       <p
                         style={{
@@ -999,7 +1010,7 @@ export default function TiendaPublica() {
                           flexWrap: 'wrap',
                         }}
                       >
-                        {(productoSeleccionado.talles ?? [])
+                        {productoSeleccionado.talles
                           .slice()
                           .sort((a, b) => {
                             if (

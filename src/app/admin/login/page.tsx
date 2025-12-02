@@ -16,7 +16,7 @@ export default function AdminLogin() {
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
-  const iniciarSesion = async (e) => {
+  const iniciarSesion = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setCargando(true);
     setMensaje('');

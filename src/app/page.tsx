@@ -104,19 +104,31 @@ export default function TiendaPublica() {
   };
 
   const siguienteImagen = () => {
-    if (productoSeleccionado && productoSeleccionado.imagenes) {
-      setImagenActual((prev) =>
-        prev === productoSeleccionado.imagenes.length - 1 ? 0 : prev + 1
-      );
+    if (
+      !productoSeleccionado ||
+      !productoSeleccionado.imagenes ||
+      productoSeleccionado.imagenes.length === 0
+    ) {
+      return;
     }
+
+    const total = productoSeleccionado.imagenes.length;
+
+    setImagenActual((prev) => (prev === total - 1 ? 0 : prev + 1));
   };
 
   const anteriorImagen = () => {
-    if (productoSeleccionado && productoSeleccionado.imagenes) {
-      setImagenActual((prev) =>
-        prev === 0 ? productoSeleccionado.imagenes.length - 1 : prev - 1
-      );
+    if (
+      !productoSeleccionado ||
+      !productoSeleccionado.imagenes ||
+      productoSeleccionado.imagenes.length === 0
+    ) {
+      return;
     }
+
+    const total = productoSeleccionado.imagenes.length;
+
+    setImagenActual((prev) => (prev === 0 ? total - 1 : prev - 1));
   };
 
   const toggleCategoria = (categoria: string) => {
@@ -127,7 +139,10 @@ export default function TiendaPublica() {
     }
   };
 
-  const aplicarFiltro = (categoria: string, subcategoria: string | null = null) => {
+  const aplicarFiltro = (
+    categoria: string,
+    subcategoria: string | null = null
+  ) => {
     setFiltroCategoria(categoria);
     setFiltroSubcategoria(subcategoria);
     setSidebarAbierto(false);
@@ -859,7 +874,7 @@ export default function TiendaPublica() {
                         }}
                       >
                         {imagenActual + 1} /{' '}
-                        {productoSeleccionado.imagenes.length}
+                        {productoSeleccionado.imagenes?.length ?? 0}
                       </div>
                     </>
                   )}
@@ -962,7 +977,7 @@ export default function TiendaPublica() {
                 )}
 
                 {productoSeleccionado.tipo_talle !== 'sin_talle' &&
-                  productoSeleccionado.talles?.length > 0 && (
+                  (productoSeleccionado.talles?.length ?? 0) > 0 && (
                     <div style={{ marginBottom: '20px' }}>
                       <p
                         style={{
@@ -983,7 +998,7 @@ export default function TiendaPublica() {
                           flexWrap: 'wrap',
                         }}
                       >
-                        {productoSeleccionado.talles
+                        {(productoSeleccionado.talles ?? [])
                           .slice()
                           .sort((a, b) => {
                             if (

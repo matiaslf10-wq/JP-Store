@@ -20,8 +20,10 @@ export default function AdminLayout({
     }
 
     // Verificar autenticación
-    const estaAutenticado = localStorage.getItem('admin_authenticated') === 'true';
-    
+    const estaAutenticado =
+      typeof window !== 'undefined' &&
+      localStorage.getItem('admin_authenticated') === 'true';
+
     if (!estaAutenticado) {
       window.location.href = '/admin/login';
     } else {
@@ -32,8 +34,10 @@ export default function AdminLayout({
 
   const cerrarSesion = () => {
     if (confirm('¿Cerrar sesión?')) {
-      localStorage.removeItem('admin_authenticated');
-      localStorage.removeItem('admin_email');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('admin_authenticated');
+        localStorage.removeItem('admin_email');
+      }
       window.location.href = '/admin/login';
     }
   };
@@ -41,23 +45,27 @@ export default function AdminLayout({
   // Mostrar pantalla de carga mientras verifica
   if (verificando) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f8f9fa'
-      }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#f8f9fa',
+        }}
+      >
         <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '50px',
-            height: '50px',
-            border: '5px solid #f3f3f3',
-            borderTop: '5px solid #4CAF50',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }}></div>
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              border: '5px solid #f3f3f3',
+              borderTop: '5px solid #4CAF50',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 20px',
+            }}
+          ></div>
           <p style={{ color: '#666' }}>Verificando acceso...</p>
         </div>
         <style>{`
@@ -79,45 +87,53 @@ export default function AdminLayout({
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
       {/* Navbar del Admin */}
-      <nav style={{
-        backgroundColor: '#333',
-        color: 'white',
-        padding: '15px 0',
-        borderBottom: '3px solid #4CAF50'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <a 
+      <nav
+        style={{
+          backgroundColor: '#333',
+          color: 'white',
+          padding: '15px 0',
+          borderBottom: '3px solid #4CAF50',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '0 20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <a
             href="/admin"
             style={{
               color: 'white',
               textDecoration: 'none',
               fontSize: '20px',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             }}
           >
             🔧 Admin Panel
           </a>
 
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <span style={{
-              color: '#aaa',
-              fontSize: '14px'
-            }}>
-              {localStorage.getItem('admin_email')}
+            <span
+              style={{
+                color: '#aaa',
+                fontSize: '14px',
+              }}
+            >
+              {typeof window !== 'undefined'
+                ? localStorage.getItem('admin_email')
+                : ''}
             </span>
             <a
               href="/admin/productos"
               style={{
                 color: 'white',
                 textDecoration: 'none',
-                fontSize: '14px'
+                fontSize: '14px',
               }}
             >
               Productos
@@ -131,7 +147,7 @@ export default function AdminLayout({
                 color: 'white',
                 textDecoration: 'none',
                 borderRadius: '4px',
-                fontSize: '14px'
+                fontSize: '14px',
               }}
             >
               Ver Tienda
@@ -145,7 +161,7 @@ export default function AdminLayout({
                 border: 'none',
                 borderRadius: '4px',
                 fontSize: '14px',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               Cerrar Sesión

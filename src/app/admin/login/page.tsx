@@ -36,9 +36,10 @@ export default function AdminLogin() {
         return;
       }
 
-      // Guardar algo en localStorage para el layout admin
+      // Guardar flags en localStorage para el layout admin
       if (typeof window !== 'undefined') {
-        localStorage.setItem('admin_autenticado', 'true');
+        localStorage.setItem('admin_authenticated', 'true'); // 👈 MISMO NOMBRE QUE EN EL LAYOUT
+        localStorage.setItem('admin_email', email);          // 👈 Así podés mostrar el mail arriba
       }
 
       router.push('/admin');

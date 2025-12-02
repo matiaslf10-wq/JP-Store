@@ -8,8 +8,9 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [autenticado, setAutenticado] = useState(false);
   const [verificando, setVerificando] = useState(true);
+  const [autenticado, setAutenticado] = useState(false);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -19,16 +20,19 @@ export default function AdminLayout({
       return;
     }
 
-    // Verificar autenticación
-    const estaAutenticado =
-      typeof window !== 'undefined' &&
-      localStorage.getItem('admin_authenticated') === 'true';
+    // Verificar autenticación desde localStorage
+    if (typeof window !== 'undefined') {
+      const estaAutenticado =
+        localStorage.getItem('admin_authenticated') === 'true';
+      const emailGuardado = localStorage.getItem('admin_email');
 
-    if (!estaAutenticado) {
-      window.location.href = '/admin/login';
-    } else {
-      setAutenticado(true);
-      setVerificando(false);
+      if (!estaAutenticado) {
+        window.location.href = '/admin/login';
+      } else {
+        setAutenticado(true);
+        setAdminEmail(emailGuardado);
+        setVerificando(false);
+      }
     }
   }, [pathname]);
 
@@ -37,12 +41,12 @@ export default function AdminLayout({
       if (typeof window !== 'undefined') {
         localStorage.removeItem('admin_authenticated');
         localStorage.removeItem('admin_email');
+        window.location.href = '/admin/login';
       }
-      window.location.href = '/admin/login';
     }
   };
 
-  // Mostrar pantalla de carga mientras verifica
+  // Pantalla de carga mientras verifica
   if (verificando) {
     return (
       <div
@@ -118,16 +122,17 @@ export default function AdminLayout({
           </a>
 
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <span
-              style={{
-                color: '#aaa',
-                fontSize: '14px',
-              }}
-            >
-              {typeof window !== 'undefined'
-                ? localStorage.getItem('admin_email')
-                : ''}
-            </span>
+            {adminEmail && (
+              <span
+                style={{
+                  color: '#aaa',
+                  fontSize: '14px',
+                }}
+              >
+                {adminEmail}
+              </span>
+            )}
+
             <a
               href="/admin/productos"
               style={{

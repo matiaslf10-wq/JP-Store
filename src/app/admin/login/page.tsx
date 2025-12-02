@@ -4,7 +4,7 @@ import { useState, FormEvent } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 
-// Aseguramos que las env vars sean string
+// Env vars (asegurate de que estén bien seteadas)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 
@@ -23,25 +23,34 @@ export default function AdminLogin() {
     setMensaje('');
 
     try {
+      // 1) Buscamos por email en la tabla CORRECTA: admin_users
       const { data, error } = await supabase
-        .from('usuarios_admin')
-        .select('*')
+        .from('admin_users') // 👈 nombre real de la tabla
+        .select('id, email, password')
         .eq('email', email)
-        .eq('password', password)
         .single();
 
       if (error || !data) {
+        console.error('Error Supabase:', error);
         setMensaje('Credenciales incorrectas');
         setCargando(false);
         return;
       }
 
-      // Guardar flags en localStorage para el layout admin
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('admin_authenticated', 'true'); // 👈 MISMO NOMBRE QUE EN EL LAYOUT
-        localStorage.setItem('admin_email', email);          // 👈 Así podés mostrar el mail arriba
+      // 2) Comparamos la contraseña en el front (texto plano)
+      if (data.password !== password) {
+        setMensaje('Credenciales incorrectas');
+        setCargando(false);
+        return;
       }
 
+      // 3) Guardamos flags para el layout admin
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_authenticated', 'true');
+        localStorage.setItem('admin_email', data.email);
+      }
+
+      // 4) Redirigimos al dashboard
       router.push('/admin');
     } catch (err) {
       console.error(err);

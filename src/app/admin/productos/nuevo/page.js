@@ -25,11 +25,12 @@ export default function AgregarProducto() {
   const [subiendoImagen, setSubiendoImagen] = useState(false);
 
   const tallesRopa = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const tallesCalzado = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
+  const tallesCalzado = ['22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
 
   const subcategoriasPorTipo = {
     ropa: ['Hombre', 'Mujer', 'Niños'],
     calzado: ['Hombre', 'Mujer', 'Niños'],
+    deportes: ['Indumentaria', 'Calzado'],
     sin_talle: [],
   };
 
@@ -39,7 +40,19 @@ export default function AgregarProducto() {
 
   if (!montado) return null;
 
+  // FUNCIÓN MEJORADA: Detecta qué talles mostrar según tipo_talle Y subcategoría
   const obtenerTallesDisponibles = () => {
+    // Para deportes, depende de la subcategoría
+    if (producto.tipo_talle === 'deportes') {
+      if (producto.subcategoria === 'Indumentaria') {
+        return tallesRopa;
+      } else if (producto.subcategoria === 'Calzado') {
+        return tallesCalzado;
+      }
+      return [];
+    }
+    
+    // Para otras categorías, usa la lógica original
     if (producto.tipo_talle === 'calzado') return tallesCalzado;
     if (producto.tipo_talle === 'ropa') return tallesRopa;
     return [];
@@ -64,7 +77,8 @@ export default function AgregarProducto() {
     let categoria = '';
     if (tipo === 'ropa') categoria = 'Ropa';
     else if (tipo === 'calzado') categoria = 'Calzado';
-    else categoria = 'Accesorios'; // lo podés cambiar si querés
+    else if (tipo === 'deportes') categoria = 'Deportes';
+    else categoria = 'Accesorios';
 
     setProducto((prev) => ({
       ...prev,
@@ -135,7 +149,7 @@ export default function AgregarProducto() {
     }
 
     if (
-      (producto.tipo_talle === 'ropa' || producto.tipo_talle === 'calzado') &&
+      (producto.tipo_talle === 'ropa' || producto.tipo_talle === 'calzado' || producto.tipo_talle === 'deportes') &&
       !producto.subcategoria
     ) {
       setMensaje('Por favor selecciona una subcategoría');
@@ -256,7 +270,7 @@ export default function AgregarProducto() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '10px',
               marginBottom: '15px',
               padding: '10px',
@@ -306,6 +320,26 @@ export default function AgregarProducto() {
             </button>
             <button
               type="button"
+              onClick={() => cambiarTipoTalle('deportes')}
+              style={{
+                padding: '10px',
+                border: `2px solid ${
+                  producto.tipo_talle === 'deportes' ? '#4CAF50' : '#ddd'
+                }`,
+                backgroundColor:
+                  producto.tipo_talle === 'deportes' ? '#4CAF50' : 'white',
+                color: producto.tipo_talle === 'deportes' ? 'white' : '#333',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              ⚽ Deportes
+            </button>
+            <button
+              type="button"
               onClick={() => cambiarTipoTalle('sin_talle')}
               style={{
                 padding: '10px',
@@ -326,7 +360,7 @@ export default function AgregarProducto() {
             </button>
           </div>
 
-          {(producto.tipo_talle === 'ropa' || producto.tipo_talle === 'calzado') && (
+          {(producto.tipo_talle === 'ropa' || producto.tipo_talle === 'calzado' || producto.tipo_talle === 'deportes') && (
             <div style={{ marginBottom: '15px' }}>
               <label
                 style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}
@@ -336,9 +370,14 @@ export default function AgregarProducto() {
               <select
                 required
                 value={producto.subcategoria}
-                onChange={(e) =>
-                  setProducto({ ...producto, subcategoria: e.target.value })
-                }
+                onChange={(e) => {
+                  // Al cambiar subcategoría, limpiar talles seleccionados
+                  setProducto({ 
+                    ...producto, 
+                    subcategoria: e.target.value,
+                    talles: [] 
+                  });
+                }}
                 style={{
                   width: '100%',
                   padding: '10px',
@@ -356,10 +395,16 @@ export default function AgregarProducto() {
                   </option>
                 ))}
               </select>
-              <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                💡 Para ropa y calzado es obligatorio elegir si es para Hombre, Mujer
-                o Niños.
-              </p>
+              {producto.tipo_talle === 'deportes' && (
+                <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                  💡 <strong>Indumentaria</strong> = talles XS-XXL | <strong>Calzado</strong> = números 22-45
+                </p>
+              )}
+              {producto.tipo_talle !== 'deportes' && (
+                <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                  💡 Selecciona la subcategoría correspondiente.
+                </p>
+              )}
             </div>
           )}
 
@@ -407,7 +452,7 @@ export default function AgregarProducto() {
 
         {/* Talles */}
         <div style={{ marginBottom: '20px' }}>
-          {producto.tipo_talle !== 'sin_talle' && (
+          {producto.tipo_talle !== 'sin_talle' && producto.subcategoria && (
             <>
               <label
                 style={{
@@ -417,7 +462,8 @@ export default function AgregarProducto() {
                   color: '#666',
                 }}
               >
-                {producto.tipo_talle === 'calzado'
+                {(producto.tipo_talle === 'calzado' || 
+                  (producto.tipo_talle === 'deportes' && producto.subcategoria === 'Calzado'))
                   ? 'Números Disponibles'
                   : 'Talles Disponibles'}
               </label>
@@ -466,11 +512,15 @@ export default function AgregarProducto() {
                   }}
                 >
                   ✓ {producto.talles.length}{' '}
-                  {producto.tipo_talle === 'calzado' ? 'números' : 'talles'} seleccionados:{' '}
+                  {(producto.tipo_talle === 'calzado' || 
+                    (producto.tipo_talle === 'deportes' && producto.subcategoria === 'Calzado'))
+                    ? 'números' 
+                    : 'talles'} seleccionados:{' '}
                   {producto.talles
                     .slice()
                     .sort((a, b) => {
-                      if (producto.tipo_talle === 'calzado') {
+                      if (producto.tipo_talle === 'calzado' || 
+                          (producto.tipo_talle === 'deportes' && producto.subcategoria === 'Calzado')) {
                         return parseInt(a) - parseInt(b);
                       }
                       return 0;
@@ -479,6 +529,20 @@ export default function AgregarProducto() {
                 </p>
               )}
             </>
+          )}
+
+          {producto.tipo_talle !== 'sin_talle' && !producto.subcategoria && (
+            <p style={{
+              padding: '12px',
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffc107',
+              borderRadius: '6px',
+              color: '#856404',
+              fontSize: '14px',
+              textAlign: 'center',
+            }}>
+              ⚠️ Primero selecciona una subcategoría para ver los talles disponibles
+            </p>
           )}
         </div>
 

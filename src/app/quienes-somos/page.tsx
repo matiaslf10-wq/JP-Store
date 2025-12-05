@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 
-
 export default function QuienesSomosPage() {
   const instagramRef = useRef<HTMLDivElement | null>(null);
 
@@ -25,8 +24,6 @@ export default function QuienesSomosPage() {
     script.src = 'https://www.instagram.com/embed.js';
     script.async = true;
     document.body.appendChild(script);
-
-    // No limpiamos el script porque puede reutilizarse si se vuelve a montar
   }, []);
 
   return (
@@ -63,17 +60,17 @@ export default function QuienesSomosPage() {
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <img
-          src="/JPStore-logo.png"
-          alt="JP Store"
-          style={{
-            width: '200px',
-            maxWidth: '70%',
-            height: 'auto',
-            margin: '0 auto 30px',
-            display: 'block',
-          }}
-        />
+          <img
+            src="/JPStore-logo.png"
+            alt="JP Store"
+            style={{
+              width: '200px',
+              maxWidth: '70%',
+              height: 'auto',
+              margin: '0 auto 30px',
+              display: 'block',
+            }}
+          />
           <h1
             style={{
               fontSize: '32px',
@@ -83,32 +80,15 @@ export default function QuienesSomosPage() {
           >
             Quiénes somos
           </h1>
-          <p style={{ fontSize: '16px', color: '#666' }}>
-            Un espacio para contar la historia y la personalidad de JP Store.
+          <p style={{ fontSize: '16px', color: '#666', whiteSpace: 'pre-line' }}>
+            {`Jp Store es un emprendimiento joven que arrancó en 2024. 
+Nos dedicamos a la venta de ropa, zapatillas, artículos de fútbol, electrónica y mucho más, haciendo hincapié en brindar la mejor calidad al mejor precio. Ponemos toda nuestra energía en la atención al cliente para que tu experiencia de compra sea sencilla y placentera.
+
+Contamos con nuestro local en Altos de Podestá, Manzana 5, Casa 23 desde principios de 2025, donde además de ser punto de entrega, tenemos showroom para que vengas a ver y probar nuestros productos.
+
+¡Te invitamos a visitarnos y conocernos!`}
           </p>
         </div>
-
-        {/* Texto descriptivo (ejemplo) */}
-        <section style={{ marginBottom: '30px' }}>
-          <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>
-            Nuestra historia
-          </h2>
-          <p style={{ fontSize: '15px', color: '#555', lineHeight: 1.6 }}>
-            Acá podés escribir quiénes son, cómo nació JP Store, qué tipo de
-            productos venden, en qué se diferencian, etc. Es solo texto de
-            ejemplo para que tengas la estructura armada.
-          </p>
-        </section>
-
-        <section style={{ marginBottom: '30px' }}>
-          <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>
-            Nuestro objetivo
-          </h2>
-          <p style={{ fontSize: '15px', color: '#555', lineHeight: 1.6 }}>
-            Podés usar esta sección para hablar de la calidad, la atención al
-            cliente, la forma de trabajo y los valores de JP Store.
-          </p>
-        </section>
 
         {/* Lugar para fotos */}
         <section style={{ marginBottom: '30px' }}>
@@ -120,6 +100,87 @@ export default function QuienesSomosPage() {
             &lt;img /&gt; o componentes de Next) mostrando el equipo, el local,
             ferias, etc.
           </p>
+        </section>
+
+        {/* Mapa de Google para la sección "Quiénes Somos" */}
+        <section
+          style={{
+            width: '100%',
+            maxWidth: '800px',
+            margin: '20px auto',
+          }}
+        >
+          <h3
+            style={{
+              textAlign: 'center',
+              marginBottom: '15px',
+            }}
+          >
+            Nuestra ubicación
+          </h3>
+          <p
+            style={{
+              textAlign: 'center',
+              marginBottom: '20px',
+            }}
+          >
+            <strong>Altos de Podestá, Manzana 5, Casa 23</strong>
+            <br />
+            Buenos Aires, Argentina
+          </p>
+
+          {/* iframe de Google Maps */}
+          <div
+            style={{
+              position: 'relative',
+              paddingBottom: '56.25%',
+              height: 0,
+              overflow: 'hidden',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            }}
+          >
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3281.9876543210!2d-58.5123456!3d-34.6543210!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzTCsDM5JzE1LjYiUyA1OMKwMzAnNDQuNCJX!5e0!3m2!1ses!2sar!4v1234567890"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                border: 0,
+              }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+
+          {/* Botón para abrir en Google Maps */}
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: '15px',
+            }}
+          >
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Altos+de+Podestá+Manzana+5+Casa+23+Buenos+Aires+Argentina"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block',
+                padding: '12px 24px',
+                backgroundColor: '#4285f4',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '5px',
+                fontWeight: 'bold',
+                transition: 'background-color 0.3s',
+              }}
+            >
+              Ver en Google Maps
+            </a>
+          </div>
         </section>
 
         {/* Reel de Instagram embebido */}
@@ -143,7 +204,7 @@ export default function QuienesSomosPage() {
             Mirá más contenido
           </h2>
           <Link
-            href="https://www.instagram.com/jpstore/"
+            href="https://www.instagram.com/jp.storeok?igsh=ZTZycDNpcnNldjk5"
             target="_blank"
             rel="noopener noreferrer"
             style={{

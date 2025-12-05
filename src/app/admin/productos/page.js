@@ -17,7 +17,7 @@ export default function ListaProductos() {
   const [tipoTalleEditando, setTipoTalleEditando] = useState('sin_talle');
 
   const tallesRopa = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const tallesCalzado = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
+  const tallesCalzado = ['22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
 
   useEffect(() => {
     cargarProductos();

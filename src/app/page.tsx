@@ -15,7 +15,7 @@ type Producto = {
   descripcion?: string | null;
   precio: number | string;
   imagenes?: string[];
-  tipo_talle?: string; // 'ropa' | 'calzado' | 'sin_talle' | otro
+  tipo_talle?: string; // 'ropa' | 'calzado' | 'deportes' | 'sin_talle' | otro
   categoria?: string | null;
   subcategoria?: string | null;
   talles?: string[];
@@ -46,20 +46,24 @@ export default function TiendaPublica() {
     null
   );
 
-  const categorias: CategoriasConfig = {
-    ropa: {
-      nombre: '👕 Ropa',
-      subcategorias: ['Hombre', 'Mujer', 'Niños'],
-    },
-    calzado: {
-      nombre: '👟 Calzado',
-      subcategorias: ['Hombre', 'Mujer', 'Niños'],
-    },
-    accesorios: {
-      nombre: '🎒 Accesorios',
-      subcategorias: [],
-    },
-  };
+const categorias: CategoriasConfig = {
+  ropa: {
+    nombre: '👕 Ropa',
+    subcategorias: ['Hombre', 'Mujer', 'Niños'],
+  },
+  calzado: {
+    nombre: '👟 Calzado',
+    subcategorias: ['Hombre', 'Mujer', 'Niños'],
+  },
+  deportes: {
+    nombre: '⚽ Deportes',
+    subcategorias: ['Indumentaria', 'Calzado'],
+  },
+  accesorios: {
+    nombre: '🎒 Accesorios',
+    subcategorias: [],
+  },
+};
 
   const WHATSAPP_NUMBER = '5491130039615';
   const crearLinkWhatsApp = (mensaje: string) =>
@@ -164,6 +168,7 @@ export default function TiendaPublica() {
       !filtroCategoria ||
       (filtroCategoria === 'ropa' && producto.tipo_talle === 'ropa') ||
       (filtroCategoria === 'calzado' && producto.tipo_talle === 'calzado') ||
+      (filtroCategoria === 'deportes' && producto.tipo_talle === 'deportes') ||
       (filtroCategoria === 'accesorios' &&
         producto.tipo_talle === 'sin_talle');
 
@@ -632,22 +637,22 @@ export default function TiendaPublica() {
                       objectFit: 'cover',
                     }}
                   />
-{(producto.imagenes?.length ?? 0) > 1 && (
-  <span
-    style={{
-      position: 'absolute',
-      bottom: '10px',
-      right: '10px',
-      backgroundColor: 'rgba(0,0,0,0.7)',
-      color: 'white',
-      padding: '4px 8px',
-      borderRadius: '4px',
-      fontSize: '12px',
-    }}
-  >
-    📷 {producto.imagenes?.length ?? 0}
-  </span>
-)}
+                  {(producto.imagenes?.length ?? 0) > 1 && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        right: '10px',
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        color: 'white',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                      }}
+                    >
+                      📷 {producto.imagenes?.length ?? 0}
+                    </span>
+                  )}
 
                   {producto.subcategoria && (
                     <span
@@ -989,54 +994,53 @@ export default function TiendaPublica() {
                 )}
 
                 {productoSeleccionado.tipo_talle !== 'sin_talle' &&
-  (productoSeleccionado.talles?.length ?? 0) > 0 && (
-    <div style={{ marginBottom: '20px' }}>
-      <p
-        style={{
-          fontSize: '14px',
-          fontWeight: 'bold',
-          marginBottom: '10px',
-          color: '#333',
-        }}
-      >
-        {productoSeleccionado.tipo_talle === 'calzado'
-          ? 'Números disponibles:'
-          : 'Talles disponibles:'}
-      </p>
-      <div
-        style={{
-          display: 'flex',
-          gap: '10px',
-          flexWrap: 'wrap',
-        }}
-      >
-        {(productoSeleccionado.talles ?? [])
-          .slice()
-          .sort((a, b) => {
-            if (productoSeleccionado.tipo_talle === 'calzado') {
-              return parseInt(a) - parseInt(b);
-            }
-            return 0;
-          })
-          .map((talle) => (
-            <span
-              key={talle}
-              style={{
-                padding: '8px 16px',
-                border: '2px solid #4CAF50',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#4CAF50',
-              }}
-            >
-              {talle}
-            </span>
-          ))}
-      </div>
-    </div>
-  )}
-
+                  (productoSeleccionado.talles?.length ?? 0) > 0 && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <p
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          marginBottom: '10px',
+                          color: '#333',
+                        }}
+                      >
+                        {productoSeleccionado.tipo_talle === 'calzado'
+                          ? 'Números disponibles:'
+                          : 'Talles disponibles:'}
+                      </p>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '10px',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        {(productoSeleccionado.talles ?? [])
+                          .slice()
+                          .sort((a, b) => {
+                            if (productoSeleccionado.tipo_talle === 'calzado') {
+                              return parseInt(a) - parseInt(b);
+                            }
+                            return 0;
+                          })
+                          .map((talle) => (
+                            <span
+                              key={talle}
+                              style={{
+                                padding: '8px 16px',
+                                border: '2px solid #4CAF50',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#4CAF50',
+                              }}
+                            >
+                              {talle}
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  )}
 
                 {/* Botón WhatsApp dentro del modal */}
                 <div style={{ marginTop: '10px' }}>

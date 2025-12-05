@@ -179,7 +179,7 @@ Contamos con nuestro local en Altos de Podestá, Manzana 5, Casa 23 desde princi
             Video destacado
           </h2>
           <p style={{ fontSize: '15px', color: '#555', marginBottom: '15px' }}>
-            Mirá uno de nuestros reels en Instagram:
+            Nuestro local:
           </p>
 
           <div
@@ -193,24 +193,7 @@ Contamos con nuestro local en Altos de Podestá, Manzana 5, Casa 23 desde princi
           <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>
             Mirá más contenido
           </h2>
-          <Link
-            href="https://www.instagram.com/reel/DR2uysVgZAt/?igsh=OW5zcWExdmx1ajgy"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-block',
-              padding: '12px 22px',
-              backgroundColor: '#E1306C',
-              color: 'white',
-              borderRadius: '999px',
-              textDecoration: 'none',
-              fontWeight: 600,
-              fontSize: '15px',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-            }}
-          >
-            Ver Instagram de JP Store
-          </Link>
+
         </section>
       </div>
     </main>

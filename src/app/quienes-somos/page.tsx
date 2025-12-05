@@ -13,7 +13,7 @@ export default function QuienesSomosPage() {
     instagramRef.current.innerHTML = `
       <blockquote
         class="instagram-media"
-        data-instgrm-permalink="https://www.instagram.com/reel/DG_c4YwyAx8/"
+        data-instgrm-permalink="https://www.instagram.com/reel/DR2uysVgZAt/"
         data-instgrm-captioned
         style="margin: 0 auto; max-width: 540px; width: 100%;"
       ></blockquote>
@@ -193,7 +193,24 @@ Contamos con nuestro local en Altos de Podestá, Manzana 5, Casa 23 desde princi
           <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>
             Mirá más contenido
           </h2>
-
+          <Link
+            href="https://www.instagram.com/reel/DR2uysVgZAt/?igsh=OW5zcWExdmx1ajgy"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              padding: '12px 22px',
+              backgroundColor: '#E1306C',
+              color: 'white',
+              borderRadius: '999px',
+              textDecoration: 'none',
+              fontWeight: 600,
+              fontSize: '15px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+            }}
+          >
+            Ver Instagram de JP Store
+          </Link>
         </section>
       </div>
     </main>

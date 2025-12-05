@@ -90,17 +90,7 @@ Contamos con nuestro local en Altos de Podestá, Manzana 5, Casa 23 desde princi
           </p>
         </div>
 
-        {/* Lugar para fotos */}
-        <section style={{ marginBottom: '30px' }}>
-          <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>
-            Fotos del equipo y del showroom
-          </h2>
-          <p style={{ fontSize: '15px', color: '#555', lineHeight: 1.6 }}>
-            Más adelante podés insertar acá imágenes (por ejemplo con etiquetas
-            &lt;img /&gt; o componentes de Next) mostrando el equipo, el local,
-            ferias, etc.
-          </p>
-        </section>
+
 
         {/* Mapa de Google para la sección "Quiénes Somos" */}
         <section

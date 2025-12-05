@@ -194,7 +194,7 @@ Contamos con nuestro local en Altos de Podestá, Manzana 5, Casa 23 desde princi
             Mirá más contenido
           </h2>
           <Link
-            href="https://www.instagram.com/jp.storeok?igsh=ZTZycDNpcnNldjk5"
+            href="https://www.instagram.com/reel/DR2uysVgZAt/?igsh=OW5zcWExdmx1ajgy"
             target="_blank"
             rel="noopener noreferrer"
             style={{

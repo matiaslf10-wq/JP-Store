@@ -57,10 +57,7 @@ export default function ListaProductos() {
     if (!confirm('¿Estás seguro de eliminar este producto?')) return;
 
     try {
-      const { error } = await supabase
-        .from('productos')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('productos').delete().eq('id', id);
 
       if (error) throw error;
 
@@ -72,15 +69,9 @@ export default function ListaProductos() {
     }
   };
 
-  const actualizarProducto = async (
-    id: string,
-    cambios: Partial<Producto>
-  ) => {
+  const actualizarProducto = async (id: string, cambios: Partial<Producto>) => {
     try {
-      const { error } = await supabase
-        .from('productos')
-        .update(cambios)
-        .eq('id', id);
+      const { error } = await supabase.from('productos').update(cambios).eq('id', id);
 
       if (error) throw error;
 
@@ -158,9 +149,7 @@ export default function ListaProductos() {
       const producto = productos.find((p) => p.id === productoId);
       if (!producto || !producto.imagenes) return;
 
-      const nuevasImagenes = producto.imagenes.filter(
-        (_, i) => i !== indexImagen
-      );
+      const nuevasImagenes = producto.imagenes.filter((_, i) => i !== indexImagen);
 
       await actualizarProducto(productoId, { imagenes: nuevasImagenes });
     } catch (error) {
@@ -246,7 +235,7 @@ export default function ListaProductos() {
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               }}
             >
-              {/* Imágenes */}
+              {/* IMAGEN */}
               <div
                 style={{
                   height: '200px',
@@ -299,10 +288,9 @@ export default function ListaProductos() {
                 )}
               </div>
 
-              {/* Información */}
+              {/* INFO */}
               <div style={{ padding: '15px' }}>
                 {editando === producto.id ? (
-                  // Modo edición
                   <div>
                     <input
                       type="text"
@@ -316,10 +304,11 @@ export default function ListaProductos() {
                         borderRadius: '4px',
                       }}
                     />
+
                     <input
                       type="number"
-                      step="0.01"
-                      defaultValue={producto.precio}
+                      step="1"
+                      defaultValue={Math.round(producto.precio)}
                       id={`precio-${producto.id}`}
                       style={{
                         width: '100%',
@@ -329,6 +318,7 @@ export default function ListaProductos() {
                         borderRadius: '4px',
                       }}
                     />
+
                     <input
                       type="text"
                       defaultValue={producto.categoria || ''}
@@ -342,6 +332,7 @@ export default function ListaProductos() {
                         borderRadius: '4px',
                       }}
                     />
+
                     <textarea
                       defaultValue={producto.descripcion || ''}
                       id={`desc-${producto.id}`}
@@ -356,7 +347,7 @@ export default function ListaProductos() {
                       }}
                     />
 
-                    {/* Gestión de imágenes */}
+                    {/* IMÁGENES */}
                     <div
                       style={{
                         marginBottom: '10px',
@@ -375,6 +366,7 @@ export default function ListaProductos() {
                       >
                         Imágenes actuales:
                       </p>
+
                       <div
                         style={{
                           display: 'grid',
@@ -419,6 +411,7 @@ export default function ListaProductos() {
                           </div>
                         ))}
                       </div>
+
                       <label
                         style={{
                           display: 'block',
@@ -469,11 +462,9 @@ export default function ListaProductos() {
                             return;
                           }
 
-                          const precioNum = parseFloat(precioInput.value);
-                          if (Number.isNaN(precioNum)) {
-                            alert('El precio no es válido');
-                            return;
-                          }
+                          const precioNum = Math.round(
+                            Number(precioInput.value)
+                          );
 
                           actualizarProducto(producto.id, {
                             nombre: nombreInput.value,
@@ -494,6 +485,7 @@ export default function ListaProductos() {
                       >
                         Guardar
                       </button>
+
                       <button
                         onClick={() => setEditando(null)}
                         style={{
@@ -511,7 +503,6 @@ export default function ListaProductos() {
                     </div>
                   </div>
                 ) : (
-                  // Modo vista
                   <div>
                     <h3
                       style={{
@@ -522,6 +513,7 @@ export default function ListaProductos() {
                     >
                       {producto.nombre}
                     </h3>
+
                     <p
                       style={{
                         fontSize: '24px',
@@ -530,8 +522,9 @@ export default function ListaProductos() {
                         margin: '0 0 10px 0',
                       }}
                     >
-                      ${parseFloat(String(producto.precio)).toFixed(2)}
+                      ${Math.round(Number(producto.precio))}
                     </p>
+
                     {producto.categoria && (
                       <p
                         style={{
@@ -547,6 +540,7 @@ export default function ListaProductos() {
                         {producto.categoria}
                       </p>
                     )}
+
                     {producto.descripcion && (
                       <p
                         style={{
@@ -559,6 +553,7 @@ export default function ListaProductos() {
                         {producto.descripcion}
                       </p>
                     )}
+
                     {producto.talles?.length ? (
                       <p
                         style={{
@@ -593,6 +588,7 @@ export default function ListaProductos() {
                       >
                         ✏️ Editar
                       </button>
+
                       <button
                         onClick={() => eliminarProducto(producto.id)}
                         style={{

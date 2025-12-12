@@ -12,7 +12,7 @@ export default function AgregarProducto() {
   const [montado, setMontado] = useState(false);
   const [producto, setProducto] = useState({
     nombre: '',
-    precio: '',
+    precio: '',        // string solo dígitos
     descripcion: '',
     categoria: '',
     subcategoria: '',
@@ -25,7 +25,11 @@ export default function AgregarProducto() {
   const [subiendoImagen, setSubiendoImagen] = useState(false);
 
   const tallesRopa = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const tallesCalzado = ['22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
+  const tallesCalzado = [
+    '22', '23', '24', '25', '26', '27', '28', '29', '30',
+    '31', '32', '33', '34', '35', '36', '37', '38', '39',
+    '40', '41', '42', '43', '44', '45'
+  ];
 
   const subcategoriasPorTipo = {
     ropa: ['Hombre', 'Mujer', 'Niños'],
@@ -40,19 +44,13 @@ export default function AgregarProducto() {
 
   if (!montado) return null;
 
-  // FUNCIÓN MEJORADA: Detecta qué talles mostrar según tipo_talle Y subcategoría
+  // Detecta qué talles mostrar según tipo_talle y subcategoría
   const obtenerTallesDisponibles = () => {
-    // Para deportes, depende de la subcategoría
     if (producto.tipo_talle === 'deportes') {
-      if (producto.subcategoria === 'Indumentaria') {
-        return tallesRopa;
-      } else if (producto.subcategoria === 'Calzado') {
-        return tallesCalzado;
-      }
+      if (producto.subcategoria === 'Indumentaria') return tallesRopa;
+      if (producto.subcategoria === 'Calzado') return tallesCalzado;
       return [];
     }
-    
-    // Para otras categorías, usa la lógica original
     if (producto.tipo_talle === 'calzado') return tallesCalzado;
     if (producto.tipo_talle === 'ropa') return tallesRopa;
     return [];
@@ -90,9 +88,10 @@ export default function AgregarProducto() {
   };
 
   const subirImagenes = async (e) => {
-    const archivos = Array.from(e.target.files);
-    if (archivos.length === 0) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
+    const archivos = Array.from(files);
     setSubiendoImagen(true);
     setMensaje(`Subiendo ${archivos.length} imagen(es)...`);
 
@@ -105,20 +104,22 @@ export default function AgregarProducto() {
           .toString(36)
           .substring(7)}.${extension}`;
 
-        const { error } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('productos-imagenes')
           .upload(nombreArchivo, archivo, {
             cacheControl: '3600',
             upsert: false,
           });
 
-        if (error) throw error;
+        if (uploadError) throw uploadError;
 
         const { data: urlData } = supabase.storage
           .from('productos-imagenes')
           .getPublicUrl(nombreArchivo);
 
-        urlsSubidas.push(urlData.publicUrl);
+        if (urlData && urlData.publicUrl) {
+          urlsSubidas.push(urlData.publicUrl);
+        }
       }
 
       setProducto((prev) => ({
@@ -130,7 +131,8 @@ export default function AgregarProducto() {
       setSubiendoImagen(false);
       e.target.value = '';
     } catch (error) {
-      setMensaje(`Error al subir imágenes: ${error.message}`);
+      console.error(error);
+      setMensaje(`Error al subir imágenes: ${error.message || error}`);
       setSubiendoImagen(false);
     }
   };
@@ -149,10 +151,19 @@ export default function AgregarProducto() {
     }
 
     if (
-      (producto.tipo_talle === 'ropa' || producto.tipo_talle === 'calzado' || producto.tipo_talle === 'deportes') &&
+      (producto.tipo_talle === 'ropa' ||
+        producto.tipo_talle === 'calzado' ||
+        producto.tipo_talle === 'deportes') &&
       !producto.subcategoria
     ) {
       setMensaje('Por favor selecciona una subcategoría');
+      return;
+    }
+
+    // Precio entero obligatorio
+    const precioEntero = parseInt(producto.precio || '0', 10);
+    if (Number.isNaN(precioEntero) || precioEntero <= 0) {
+      setMensaje('El precio debe ser un número entero mayor a 0 (sin centavos)');
       return;
     }
 
@@ -163,7 +174,7 @@ export default function AgregarProducto() {
       const { error } = await supabase.from('productos').insert([
         {
           nombre: producto.nombre,
-          precio: parseFloat(producto.precio || '0'),
+          precio: precioEntero, // 👈 se guarda como entero
           descripcion: producto.descripcion,
           categoria: producto.categoria,
           subcategoria: producto.subcategoria || null,
@@ -193,6 +204,7 @@ export default function AgregarProducto() {
         window.location.href = '/admin/productos';
       }, 2000);
     } catch (error) {
+      console.error(error);
       setMensaje(`Error al guardar: ${error?.message || 'Error desconocido'}`);
       setCargando(false);
     }
@@ -209,7 +221,9 @@ export default function AgregarProducto() {
         </a>
       </div>
 
-      <h1 style={{ marginBottom: '30px', color: '#333' }}>Agregar Nuevo Producto</h1>
+      <h1 style={{ marginBottom: '30px', color: '#333' }}>
+        Agregar Nuevo Producto
+      </h1>
 
       <form onSubmit={guardarProducto}>
         {/* Nombre */}
@@ -223,7 +237,9 @@ export default function AgregarProducto() {
             type="text"
             required
             value={producto.nombre}
-            onChange={(e) => setProducto({ ...producto, nombre: e.target.value })}
+            onChange={(e) =>
+              setProducto({ ...producto, nombre: e.target.value })
+            }
             style={{
               width: '100%',
               padding: '10px',
@@ -235,19 +251,23 @@ export default function AgregarProducto() {
           />
         </div>
 
-        {/* Precio */}
+        {/* Precio (solo enteros) */}
         <div style={{ marginBottom: '20px' }}>
           <label
             style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}
           >
-            Precio *
+            Precio * (solo pesos, sin centavos)
           </label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="\d*"
             required
-            step="0.01"
             value={producto.precio}
-            onChange={(e) => setProducto({ ...producto, precio: e.target.value })}
+            onChange={(e) => {
+              const soloDigitos = e.target.value.replace(/[^\d]/g, '');
+              setProducto({ ...producto, precio: soloDigitos });
+            }}
             style={{
               width: '100%',
               padding: '10px',
@@ -255,8 +275,11 @@ export default function AgregarProducto() {
               borderRadius: '4px',
               fontSize: '16px',
             }}
-            placeholder="Ej: 59.99"
+            placeholder="Ej: 60000"
           />
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+            💡 Ingresá solo números enteros, sin puntos ni comas.
+          </p>
         </div>
 
         {/* Tipo de producto + subcategoría */}
@@ -360,10 +383,16 @@ export default function AgregarProducto() {
             </button>
           </div>
 
-          {(producto.tipo_talle === 'ropa' || producto.tipo_talle === 'calzado' || producto.tipo_talle === 'deportes') && (
+          {(producto.tipo_talle === 'ropa' ||
+            producto.tipo_talle === 'calzado' ||
+            producto.tipo_talle === 'deportes') && (
             <div style={{ marginBottom: '15px' }}>
               <label
-                style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: 'bold',
+                }}
               >
                 Subcategoría *
               </label>
@@ -371,11 +400,10 @@ export default function AgregarProducto() {
                 required
                 value={producto.subcategoria}
                 onChange={(e) => {
-                  // Al cambiar subcategoría, limpiar talles seleccionados
-                  setProducto({ 
-                    ...producto, 
+                  setProducto({
+                    ...producto,
                     subcategoria: e.target.value,
-                    talles: [] 
+                    talles: [],
                   });
                 }}
                 style={{
@@ -396,12 +424,17 @@ export default function AgregarProducto() {
                 ))}
               </select>
               {producto.tipo_talle === 'deportes' && (
-                <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                  💡 <strong>Indumentaria</strong> = talles XS-XXL | <strong>Calzado</strong> = números 22-45
+                <p
+                  style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}
+                >
+                  💡 <strong>Indumentaria</strong> = talles XS-XXL |{' '}
+                  <strong>Calzado</strong> = números 22-45
                 </p>
               )}
               {producto.tipo_talle !== 'deportes' && (
-                <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                <p
+                  style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}
+                >
                   💡 Selecciona la subcategoría correspondiente.
                 </p>
               )}
@@ -462,8 +495,9 @@ export default function AgregarProducto() {
                   color: '#666',
                 }}
               >
-                {(producto.tipo_talle === 'calzado' || 
-                  (producto.tipo_talle === 'deportes' && producto.subcategoria === 'Calzado'))
+                {producto.tipo_talle === 'calzado' ||
+                (producto.tipo_talle === 'deportes' &&
+                  producto.subcategoria === 'Calzado')
                   ? 'Números Disponibles'
                   : 'Talles Disponibles'}
               </label>
@@ -476,7 +510,8 @@ export default function AgregarProducto() {
                 }}
               >
                 {obtenerTallesDisponibles().map((talle) => {
-                  const estaSeleccionado = producto.talles?.includes(talle);
+                  const estaSeleccionado =
+                    producto.talles && producto.talles.includes(talle);
                   return (
                     <button
                       key={talle}
@@ -502,7 +537,7 @@ export default function AgregarProducto() {
                 })}
               </div>
 
-              {producto.talles?.length > 0 && (
+              {producto.talles && producto.talles.length > 0 && (
                 <p
                   style={{
                     marginTop: '10px',
@@ -512,15 +547,20 @@ export default function AgregarProducto() {
                   }}
                 >
                   ✓ {producto.talles.length}{' '}
-                  {(producto.tipo_talle === 'calzado' || 
-                    (producto.tipo_talle === 'deportes' && producto.subcategoria === 'Calzado'))
-                    ? 'números' 
-                    : 'talles'} seleccionados:{' '}
+                  {producto.tipo_talle === 'calzado' ||
+                  (producto.tipo_talle === 'deportes' &&
+                    producto.subcategoria === 'Calzado')
+                    ? 'números'
+                    : 'talles'}{' '}
+                  seleccionados:{' '}
                   {producto.talles
                     .slice()
                     .sort((a, b) => {
-                      if (producto.tipo_talle === 'calzado' || 
-                          (producto.tipo_talle === 'deportes' && producto.subcategoria === 'Calzado')) {
+                      if (
+                        producto.tipo_talle === 'calzado' ||
+                        (producto.tipo_talle === 'deportes' &&
+                          producto.subcategoria === 'Calzado')
+                      ) {
                         return parseInt(a) - parseInt(b);
                       }
                       return 0;
@@ -532,16 +572,19 @@ export default function AgregarProducto() {
           )}
 
           {producto.tipo_talle !== 'sin_talle' && !producto.subcategoria && (
-            <p style={{
-              padding: '12px',
-              backgroundColor: '#fff3cd',
-              border: '1px solid #ffc107',
-              borderRadius: '6px',
-              color: '#856404',
-              fontSize: '14px',
-              textAlign: 'center',
-            }}>
-              ⚠️ Primero selecciona una subcategoría para ver los talles disponibles
+            <p
+              style={{
+                padding: '12px',
+                backgroundColor: '#fff3cd',
+                border: '1px solid #ffc107',
+                borderRadius: '6px',
+                color: '#856404',
+                fontSize: '14px',
+                textAlign: 'center',
+              }}
+            >
+              ⚠️ Primero selecciona una subcategoría para ver los talles
+              disponibles
             </p>
           )}
         </div>
@@ -582,7 +625,8 @@ export default function AgregarProducto() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                  gridTemplateColumns:
+                    'repeat(auto-fill, minmax(120px, 1fr))',
                   gap: '10px',
                 }}
               >
@@ -648,7 +692,9 @@ export default function AgregarProducto() {
               padding: '12px',
               marginBottom: '20px',
               borderRadius: '4px',
-              backgroundColor: mensaje.includes('Error') ? '#ffebee' : '#e8f5e9',
+              backgroundColor: mensaje.includes('Error')
+                ? '#ffebee'
+                : '#e8f5e9',
               color: mensaje.includes('Error') ? '#c62828' : '#2e7d32',
               border: `1px solid ${
                 mensaje.includes('Error') ? '#ef5350' : '#4CAF50'

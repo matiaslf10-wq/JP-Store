@@ -3,30 +3,59 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+type Producto = {
+  id: number | string;
+  nombre: string;
+  precio: number | string;
+  descripcion?: string | null;
+  categoria?: string | null;
+  imagenes?: string[];
+  talles?: string[];
+  tipo_talle?: string;
+};
+
 export default function ListaProductos() {
-  const [productos, setProductos] = useState([]);
-  const [editando, setEditando] = useState(null);
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [editando, setEditando] = useState<number | string | null>(null);
   const [cargando, setCargando] = useState(true);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
-  const [tallesEditando, setTallesEditando] = useState([]);
+  const [tallesEditando, setTallesEditando] = useState<string[]>([]);
   const [tipoTalleEditando, setTipoTalleEditando] = useState('sin_talle');
 
   const tallesRopa = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const tallesCalzado = ['22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
+  const tallesCalzado = [
+    '22', '23', '24', '25', '26', '27', '28', '29', '30',
+    '31', '32', '33', '34', '35', '36', '37', '38', '39',
+    '40', '41', '42', '43', '44', '45',
+  ];
 
   useEffect(() => {
     cargarProductos();
   }, []);
 
+  // 👉 Helper: precio sin centavos, formateado
+  const formatearPrecioSinCentavos = (precio: number | string) => {
+    const n = Number(precio);
+    if (Number.isNaN(n)) return '-';
+    return Math.trunc(n).toLocaleString('es-AR');
+  };
+
+  // 👉 Helper: valor entero para el input
+  const obtenerPrecioEntero = (precio: number | string) => {
+    const n = Number(precio);
+    if (Number.isNaN(n)) return '';
+    return Math.trunc(n);
+  };
+
   const cargarProductos = async () => {
     try {
       setCargando(true);
-      
+
       const { data, error } = await supabase
         .from('productos')
         .select('*')
@@ -38,7 +67,7 @@ export default function ListaProductos() {
       }
 
       console.log('Productos cargados:', data?.length || 0);
-      setProductos(data || []);
+      setProductos((data ?? []) as Producto[]);
       setCargando(false);
     } catch (error) {
       console.error('Error al cargar productos:', error);
@@ -47,21 +76,21 @@ export default function ListaProductos() {
     }
   };
 
-  const iniciarEdicion = (producto) => {
+  const iniciarEdicion = (producto: Producto) => {
     setEditando(producto.id);
     setTallesEditando(producto.talles || []);
     setTipoTalleEditando(producto.tipo_talle || 'sin_talle');
   };
 
-  const toggleTalleEdicion = (talle) => {
+  const toggleTalleEdicion = (talle: string) => {
     if (tallesEditando.includes(talle)) {
-      setTallesEditando(tallesEditando.filter(t => t !== talle));
+      setTallesEditando(tallesEditando.filter((t) => t !== talle));
     } else {
       setTallesEditando([...tallesEditando, talle]);
     }
   };
 
-  const cambiarTipoTalleEdicion = (tipo) => {
+  const cambiarTipoTalleEdicion = (tipo: string) => {
     setTipoTalleEditando(tipo);
     setTallesEditando([]);
   };
@@ -75,18 +104,15 @@ export default function ListaProductos() {
     return [];
   };
 
-  const eliminarProducto = async (id) => {
+  const eliminarProducto = async (id: number | string) => {
     if (!confirm('¿Estás seguro de eliminar este producto?')) return;
 
     try {
-      const { error } = await supabase
-        .from('productos')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('productos').delete().eq('id', id);
 
       if (error) throw error;
 
-      setProductos(productos.filter(p => p.id !== id));
+      setProductos(productos.filter((p) => p.id !== id));
       alert('Producto eliminado exitosamente');
     } catch (error) {
       console.error('Error al eliminar:', error);
@@ -94,16 +120,16 @@ export default function ListaProductos() {
     }
   };
 
-  const actualizarProducto = async (id, cambios) => {
+  const actualizarProducto = async (
+    id: number | string,
+    cambios: Partial<Producto>
+  ) => {
     try {
-      const { error } = await supabase
-        .from('productos')
-        .update(cambios)
-        .eq('id', id);
+      const { error } = await supabase.from('productos').update(cambios).eq('id', id);
 
       if (error) throw error;
 
-      const nuevosProductos = productos.map(p => 
+      const nuevosProductos = productos.map((p) =>
         p.id === id ? { ...p, ...cambios } : p
       );
       setProductos(nuevosProductos);
@@ -115,26 +141,31 @@ export default function ListaProductos() {
     }
   };
 
-  const subirImagenesEdicion = async (e, productoId) => {
-    const archivos = Array.from(e.target.files);
+  const subirImagenesEdicion = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    productoId: number | string
+  ) => {
+    const archivos = Array.from(e.target.files ?? []);
     if (archivos.length === 0) return;
 
     setSubiendoImagen(true);
 
     try {
-      const producto = productos.find(p => p.id === productoId);
-      const imagenesActuales = producto.imagenes || [];
-      const urlsSubidas = [];
+      const producto = productos.find((p) => p.id === productoId);
+      const imagenesActuales = producto?.imagenes || [];
+      const urlsSubidas: string[] = [];
 
       for (const archivo of archivos) {
         const extension = archivo.name.split('.').pop();
-        const nombreArchivo = `${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
+        const nombreArchivo = `${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(7)}.${extension}`;
 
-        const { data, error } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('productos-imagenes')
           .upload(nombreArchivo, archivo);
 
-        if (error) throw error;
+        if (uploadError) throw uploadError;
 
         const { data: urlData } = supabase.storage
           .from('productos-imagenes')
@@ -144,9 +175,9 @@ export default function ListaProductos() {
       }
 
       const nuevasImagenes = [...imagenesActuales, ...urlsSubidas];
-      
+
       await actualizarProducto(productoId, { imagenes: nuevasImagenes });
-      
+
       setSubiendoImagen(false);
       e.target.value = '';
     } catch (error) {
@@ -156,13 +187,18 @@ export default function ListaProductos() {
     }
   };
 
-  const eliminarImagenDeProducto = async (productoId, indexImagen) => {
+  const eliminarImagenDeProducto = async (
+    productoId: number | string,
+    indexImagen: number
+  ) => {
     if (!confirm('¿Eliminar esta imagen?')) return;
 
     try {
-      const producto = productos.find(p => p.id === productoId);
+      const producto = productos.find((p) => p.id === productoId);
+      if (!producto || !producto.imagenes) return;
+
       const nuevasImagenes = producto.imagenes.filter((_, i) => i !== indexImagen);
-      
+
       await actualizarProducto(productoId, { imagenes: nuevasImagenes });
     } catch (error) {
       console.error('Error:', error);
@@ -172,14 +208,16 @@ export default function ListaProductos() {
 
   if (cargando) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        fontSize: '18px',
-        color: '#666'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          fontSize: '18px',
+          color: '#666',
+        }}
+      >
         Cargando productos...
       </div>
     );
@@ -187,12 +225,14 @@ export default function ListaProductos() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '40px auto', padding: '20px' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '30px'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '30px',
+        }}
+      >
         <h1 style={{ color: '#333' }}>Mis Productos</h1>
         <a
           href="/admin/productos/nuevo"
@@ -202,7 +242,7 @@ export default function ListaProductos() {
             color: 'white',
             textDecoration: 'none',
             borderRadius: '4px',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         >
           + Agregar Producto
@@ -210,24 +250,28 @@ export default function ListaProductos() {
       </div>
 
       {productos.length === 0 ? (
-        <div style={{
-          textAlign: 'center',
-          padding: '60px 20px',
-          backgroundColor: '#f5f5f5',
-          borderRadius: '8px',
-          color: '#666'
-        }}>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '60px 20px',
+            backgroundColor: '#f5f5f5',
+            borderRadius: '8px',
+            color: '#666',
+          }}
+        >
           <p style={{ fontSize: '18px', marginBottom: '10px' }}>
             No hay productos todavía
           </p>
           <p>¡Agrega tu primer producto para empezar!</p>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: '20px'
-        }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '20px',
+          }}
+        >
           {productos.map((producto) => (
             <div
               key={producto.id}
@@ -236,16 +280,18 @@ export default function ListaProductos() {
                 borderRadius: '8px',
                 overflow: 'hidden',
                 backgroundColor: 'white',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               }}
             >
               {/* Imágenes */}
-              <div style={{ 
-                height: '200px', 
-                overflow: 'hidden',
-                backgroundColor: '#f5f5f5',
-                position: 'relative'
-              }}>
+              <div
+                style={{
+                  height: '200px',
+                  overflow: 'hidden',
+                  backgroundColor: '#f5f5f5',
+                  position: 'relative',
+                }}
+              >
                 {producto.imagenes && producto.imagenes.length > 0 ? (
                   <>
                     <img
@@ -254,33 +300,37 @@ export default function ListaProductos() {
                       style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: 'cover'
+                        objectFit: 'cover',
                       }}
                     />
                     {producto.imagenes.length > 1 && (
-                      <span style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        right: '10px',
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px'
-                      }}>
+                      <span
+                        style={{
+                          position: 'absolute',
+                          bottom: '10px',
+                          right: '10px',
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          color: 'white',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                        }}
+                      >
                         📷 {producto.imagenes.length}
                       </span>
                     )}
                   </>
                 ) : (
-                  <div style={{
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#999'
-                  }}>
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#999',
+                    }}
+                  >
                     Sin imágenes
                   </div>
                 )}
@@ -299,26 +349,26 @@ export default function ListaProductos() {
                         width: '100%',
                         padding: '8px',
                         marginBottom: '10px',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px'
+                        border: '1px solid '#ddd',
+                        borderRadius: '4px',
                       }}
                     />
                     <input
                       type="number"
-                      step="0.01"
-                      defaultValue={producto.precio}
+                      step="1"
+                      defaultValue={obtenerPrecioEntero(producto.precio)}
                       id={`precio-${producto.id}`}
                       style={{
                         width: '100%',
                         padding: '8px',
                         marginBottom: '10px',
                         border: '1px solid #ddd',
-                        borderRadius: '4px'
+                        borderRadius: '4px',
                       }}
                     />
                     <input
                       type="text"
-                      defaultValue={producto.categoria}
+                      defaultValue={producto.categoria ?? ''}
                       id={`categoria-${producto.id}`}
                       placeholder="Categoría"
                       style={{
@@ -326,56 +376,66 @@ export default function ListaProductos() {
                         padding: '8px',
                         marginBottom: '10px',
                         border: '1px solid #ddd',
-                        borderRadius: '4px'
+                        borderRadius: '4px',
                       }}
                     />
                     <textarea
                       defaultValue={producto.descripcion || ''}
                       id={`desc-${producto.id}`}
-                      rows="3"
+                      rows={3}
                       style={{
                         width: '100%',
                         padding: '8px',
                         marginBottom: '10px',
                         border: '1px solid #ddd',
                         borderRadius: '4px',
-                        fontFamily: 'inherit'
+                        fontFamily: 'inherit',
                       }}
                     />
 
                     {/* Editor de talles */}
-                    <div style={{
-                      marginBottom: '10px',
-                      padding: '10px',
-                      backgroundColor: '#f0f9ff',
-                      borderRadius: '4px'
-                    }}>
-                      <p style={{
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        marginBottom: '8px',
-                        color: '#666'
-                      }}>
+                    <div
+                      style={{
+                        marginBottom: '10px',
+                        padding: '10px',
+                        backgroundColor: '#f0f9ff',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          marginBottom: '8px',
+                          color: '#666',
+                        }}
+                      >
                         Tipo de producto:
                       </p>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '5px',
-                        marginBottom: '10px'
-                      }}>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(3, 1fr)',
+                          gap: '5px',
+                          marginBottom: '10px',
+                        }}
+                      >
                         <button
                           type="button"
                           onClick={() => cambiarTipoTalleEdicion('ropa')}
                           style={{
                             padding: '6px',
-                            border: `2px solid ${tipoTalleEditando === 'ropa' ? '#4CAF50' : '#ddd'}`,
-                            backgroundColor: tipoTalleEditando === 'ropa' ? '#4CAF50' : 'white',
-                            color: tipoTalleEditando === 'ropa' ? 'white' : '#333',
+                            border: `2px solid ${
+                              tipoTalleEditando === 'ropa' ? '#4CAF50' : '#ddd'
+                            }`,
+                            backgroundColor:
+                              tipoTalleEditando === 'ropa' ? '#4CAF50' : 'white',
+                            color:
+                              tipoTalleEditando === 'ropa' ? 'white' : '#333',
                             borderRadius: '4px',
                             fontSize: '11px',
                             fontWeight: 'bold',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                           }}
                         >
                           👕 Ropa
@@ -385,29 +445,49 @@ export default function ListaProductos() {
                           onClick={() => cambiarTipoTalleEdicion('calzado')}
                           style={{
                             padding: '6px',
-                            border: `2px solid ${tipoTalleEditando === 'calzado' ? '#4CAF50' : '#ddd'}`,
-                            backgroundColor: tipoTalleEditando === 'calzado' ? '#4CAF50' : 'white',
-                            color: tipoTalleEditando === 'calzado' ? 'white' : '#333',
+                            border: `2px solid ${
+                              tipoTalleEditando === 'calzado'
+                                ? '#4CAF50'
+                                : '#ddd'
+                            }`,
+                            backgroundColor:
+                              tipoTalleEditando === 'calzado'
+                                ? '#4CAF50'
+                                : 'white',
+                            color:
+                              tipoTalleEditando === 'calzado'
+                                ? 'white'
+                                : '#333',
                             borderRadius: '4px',
                             fontSize: '11px',
                             fontWeight: 'bold',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                           }}
                         >
                           👟 Calzado
                         </button>
                         <button
-                          type="button"
+                          type="button'
                           onClick={() => cambiarTipoTalleEdicion('sin_talle')}
                           style={{
                             padding: '6px',
-                            border: `2px solid ${tipoTalleEditando === 'sin_talle' ? '#4CAF50' : '#ddd'}`,
-                            backgroundColor: tipoTalleEditando === 'sin_talle' ? '#4CAF50' : 'white',
-                            color: tipoTalleEditando === 'sin_talle' ? 'white' : '#333',
+                            border: `2px solid ${
+                              tipoTalleEditando === 'sin_talle'
+                                ? '#4CAF50'
+                                : '#ddd'
+                            }`,
+                            backgroundColor:
+                              tipoTalleEditando === 'sin_talle'
+                                ? '#4CAF50'
+                                : 'white',
+                            color:
+                              tipoTalleEditando === 'sin_talle'
+                                ? 'white'
+                                : '#333',
                             borderRadius: '4px',
                             fontSize: '11px',
                             fontWeight: 'bold',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                           }}
                         >
                           📦 Sin talles
@@ -416,20 +496,27 @@ export default function ListaProductos() {
 
                       {tipoTalleEditando !== 'sin_talle' && (
                         <>
-                          <p style={{
-                            fontSize: '11px',
-                            color: '#666',
-                            marginBottom: '8px'
-                          }}>
-                            {tipoTalleEditando === 'calzado' ? 'Números:' : 'Talles:'}
+                          <p
+                            style={{
+                              fontSize: '11px',
+                              color: '#666',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            {tipoTalleEditando === 'calzado'
+                              ? 'Números:'
+                              : 'Talles:'}
                           </p>
-                          <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(6, 1fr)',
-                            gap: '4px'
-                          }}>
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(6, 1fr)',
+                              gap: '4px',
+                            }}
+                          >
                             {obtenerTallesDisponibles().map((talle) => {
-                              const estaSeleccionado = tallesEditando.includes(talle);
+                              const estaSeleccionado =
+                                tallesEditando.includes(talle);
                               return (
                                 <button
                                   key={talle}
@@ -437,13 +524,17 @@ export default function ListaProductos() {
                                   onClick={() => toggleTalleEdicion(talle)}
                                   style={{
                                     padding: '6px',
-                                    border: `2px solid ${estaSeleccionado ? '#4CAF50' : '#ddd'}`,
-                                    backgroundColor: estaSeleccionado ? '#4CAF50' : 'white',
+                                    border: `2px solid ${
+                                      estaSeleccionado ? '#4CAF50' : '#ddd'
+                                    }`,
+                                    backgroundColor: estaSeleccionado
+                                      ? '#4CAF50'
+                                      : 'white',
                                     color: estaSeleccionado ? 'white' : '#333',
                                     borderRadius: '4px',
                                     fontSize: '11px',
                                     fontWeight: 'bold',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer',
                                   }}
                                 >
                                   {talle}
@@ -452,11 +543,13 @@ export default function ListaProductos() {
                             })}
                           </div>
                           {tallesEditando.length > 0 && (
-                            <p style={{
-                              fontSize: '10px',
-                              color: '#4CAF50',
-                              marginTop: '6px'
-                            }}>
+                            <p
+                              style={{
+                                fontSize: '10px',
+                                color: '#4CAF50',
+                                marginTop: '6px',
+                              }}
+                            >
                               ✓ {tallesEditando.length} seleccionados
                             </p>
                           )}
@@ -464,40 +557,48 @@ export default function ListaProductos() {
                       )}
 
                       {tipoTalleEditando === 'sin_talle' && (
-                        <p style={{
-                          fontSize: '11px',
-                          color: '#2e7d32',
-                          textAlign: 'center',
-                          padding: '8px',
-                          backgroundColor: '#e8f5e9',
-                          borderRadius: '4px'
-                        }}>
+                        <p
+                          style={{
+                            fontSize: '11px',
+                            color: '#2e7d32',
+                            textAlign: 'center',
+                            padding: '8px',
+                            backgroundColor: '#e8f5e9',
+                            borderRadius: '4px',
+                          }}
+                        >
                           Sin talles
                         </p>
                       )}
                     </div>
 
                     {/* Gestión de imágenes */}
-                    <div style={{ 
-                      marginBottom: '10px',
-                      padding: '10px',
-                      backgroundColor: '#f9f9f9',
-                      borderRadius: '4px'
-                    }}>
-                      <p style={{ 
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        marginBottom: '8px',
-                        color: '#666'
-                      }}>
+                    <div
+                      style={{
+                        marginBottom: '10px',
+                        padding: '10px',
+                        backgroundColor: '#f9f9f9',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          marginBottom: '8px',
+                          color: '#666',
+                        }}
+                      >
                         Imágenes actuales:
                       </p>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '5px',
-                        marginBottom: '10px'
-                      }}>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(3, 1fr)',
+                          gap: '5px',
+                          marginBottom: '10px',
+                        }}
+                      >
                         {producto.imagenes?.map((img, idx) => (
                           <div key={idx} style={{ position: 'relative' }}>
                             <img
@@ -507,11 +608,13 @@ export default function ListaProductos() {
                                 width: '100%',
                                 height: '60px',
                                 objectFit: 'cover',
-                                borderRadius: '4px'
+                                borderRadius: '4px',
                               }}
                             />
                             <button
-                              onClick={() => eliminarImagenDeProducto(producto.id, idx)}
+                              onClick={() =>
+                                eliminarImagenDeProducto(producto.id, idx)
+                              }
                               style={{
                                 position: 'absolute',
                                 top: '-5px',
@@ -524,7 +627,7 @@ export default function ListaProductos() {
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontSize: '12px',
-                                padding: 0
+                                padding: 0,
                               }}
                             >
                               ×
@@ -532,16 +635,18 @@ export default function ListaProductos() {
                           </div>
                         ))}
                       </div>
-                      <label style={{
-                        display: 'block',
-                        padding: '8px',
-                        backgroundColor: '#4CAF50',
-                        color: 'white',
-                        textAlign: 'center',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px'
-                      }}>
+                      <label
+                        style={{
+                          display: 'block',
+                          padding: '8px',
+                          backgroundColor: '#4CAF50',
+                          color: 'white',
+                          textAlign: 'center',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                        }}
+                      >
                         + Agregar imágenes
                         <input
                           type="file"
@@ -557,13 +662,36 @@ export default function ListaProductos() {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       <button
                         onClick={() => {
+                          const nombreInput = document.getElementById(
+                            `nombre-${producto.id}`
+                          ) as HTMLInputElement | null;
+                          const precioInput = document.getElementById(
+                            `precio-${producto.id}`
+                          ) as HTMLInputElement | null;
+                          const categoriaInput = document.getElementById(
+                            `categoria-${producto.id}`
+                          ) as HTMLInputElement | null;
+                          const descInput = document.getElementById(
+                            `desc-${producto.id}`
+                          ) as HTMLTextAreaElement | null;
+
+                          const nombre = nombreInput?.value ?? '';
+                          const precioValor = precioInput?.value ?? '0';
+                          const categoria = categoriaInput?.value ?? '';
+                          const descripcion = descInput?.value ?? '';
+
+                          const precioNumero = Number(precioValor);
+                          const precioEntero = Number.isNaN(precioNumero)
+                            ? 0
+                            : Math.trunc(precioNumero);
+
                           actualizarProducto(producto.id, {
-                            nombre: document.getElementById(`nombre-${producto.id}`).value,
-                            precio: parseFloat(document.getElementById(`precio-${producto.id}`).value),
-                            categoria: document.getElementById(`categoria-${producto.id}`).value,
-                            descripcion: document.getElementById(`desc-${producto.id}`).value,
+                            nombre,
+                            precio: precioEntero,
+                            categoria,
+                            descripcion,
                             talles: tallesEditando,
-                            tipo_talle: tipoTalleEditando
+                            tipo_talle: tipoTalleEditando,
                           });
                         }}
                         style={{
@@ -573,7 +701,7 @@ export default function ListaProductos() {
                           color: 'white',
                           border: 'none',
                           borderRadius: '4px',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
                         }}
                       >
                         Guardar
@@ -587,7 +715,7 @@ export default function ListaProductos() {
                           color: 'white',
                           border: 'none',
                           borderRadius: '4px',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
                         }}
                       >
                         Cancelar
@@ -597,59 +725,74 @@ export default function ListaProductos() {
                 ) : (
                   // Modo vista
                   <div>
-                    <h3 style={{ 
-                      margin: '0 0 10px 0', 
-                      fontSize: '18px',
-                      color: '#333'
-                    }}>
+                    <h3
+                      style={{
+                        margin: '0 0 10px 0',
+                        fontSize: '18px',
+                        color: '#333',
+                      }}
+                    >
                       {producto.nombre}
                     </h3>
-                    <p style={{
-                      fontSize: '24px',
-                      fontWeight: 'bold',
-                      color: '#4CAF50',
-                      margin: '0 0 10px 0'
-                    }}>
-                      ${parseFloat(producto.precio).toFixed(2)}
+                    <p
+                      style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: '#4CAF50',
+                        margin: '0 0 10px 0',
+                      }}
+                    >
+                      ${formatearPrecioSinCentavos(producto.precio)}
                     </p>
                     {producto.categoria && (
-                      <p style={{
-                        fontSize: '12px',
-                        color: '#666',
-                        margin: '0 0 10px 0',
-                        backgroundColor: '#f0f0f0',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        display: 'inline-block'
-                      }}>
+                      <p
+                        style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          margin: '0 0 10px 0',
+                          backgroundColor: '#f0f0f0',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          display: 'inline-block',
+                        }}
+                      >
                         {producto.categoria}
                       </p>
                     )}
                     {producto.descripcion && (
-                      <p style={{
-                        fontSize: '14px',
-                        color: '#666',
-                        margin: '10px 0',
-                        lineHeight: '1.4'
-                      }}>
+                      <p
+                        style={{
+                          fontSize: '14px',
+                          color: '#666',
+                          margin: '10px 0',
+                          lineHeight: '1.4',
+                        }}
+                      >
                         {producto.descripcion}
                       </p>
                     )}
                     {producto.talles?.length > 0 && (
-                      <p style={{
-                        fontSize: '12px',
-                        color: '#666',
-                        margin: '10px 0'
-                      }}>
-                        {producto.tipo_talle === 'calzado' ? 'Números' : 'Talles'}: {producto.talles.join(', ')}
+                      <p
+                        style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          margin: '10px 0',
+                        }}
+                      >
+                        {producto.tipo_talle === 'calzado'
+                          ? 'Números'
+                          : 'Talles'}
+                        : {producto.talles.join(', ')}
                       </p>
                     )}
-                    
-                    <div style={{ 
-                      display: 'flex', 
-                      gap: '10px',
-                      marginTop: '15px'
-                    }}>
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '10px',
+                        marginTop: '15px',
+                      }}
+                    >
                       <button
                         onClick={() => iniciarEdicion(producto)}
                         style={{
@@ -660,7 +803,7 @@ export default function ListaProductos() {
                           border: 'none',
                           borderRadius: '4px',
                           cursor: 'pointer',
-                          fontSize: '14px'
+                          fontSize: '14px',
                         }}
                       >
                         ✏️ Editar
@@ -675,7 +818,7 @@ export default function ListaProductos() {
                           border: 'none',
                           borderRadius: '4px',
                           cursor: 'pointer',
-                          fontSize: '14px'
+                          fontSize: '14px',
                         }}
                       >
                         🗑️ Eliminar

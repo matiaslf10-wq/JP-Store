@@ -46,24 +46,24 @@ export default function TiendaPublica() {
     null
   );
 
-const categorias: CategoriasConfig = {
-  ropa: {
-    nombre: '👕 Ropa',
-    subcategorias: ['Hombre', 'Mujer', 'Niños'],
-  },
-  calzado: {
-    nombre: '👟 Calzado',
-    subcategorias: ['Hombre', 'Mujer', 'Niños'],
-  },
-  deportes: {
-    nombre: '⚽ Deportes',
-    subcategorias: ['Indumentaria', 'Calzado'],
-  },
-  accesorios: {
-    nombre: '🎒 Accesorios',
-    subcategorias: [],
-  },
-};
+  const categorias: CategoriasConfig = {
+    ropa: {
+      nombre: '👕 Ropa',
+      subcategorias: ['Hombre', 'Mujer', 'Niños'],
+    },
+    calzado: {
+      nombre: '👟 Calzado',
+      subcategorias: ['Hombre', 'Mujer', 'Niños'],
+    },
+    deportes: {
+      nombre: '⚽ Deportes',
+      subcategorias: ['Indumentaria', 'Calzado'],
+    },
+    accesorios: {
+      nombre: '🎒 Accesorios',
+      subcategorias: [],
+    },
+  };
 
   const WHATSAPP_NUMBER = '5491130039615';
   const crearLinkWhatsApp = (mensaje: string) =>
@@ -156,6 +156,13 @@ const categorias: CategoriasConfig = {
     setFiltroCategoria(null);
     setFiltroSubcategoria(null);
     setBusqueda('');
+  };
+
+  // 👉 Helper para mostrar precio SIN decimales
+  const formatearPrecioSinCentavos = (precio: number | string) => {
+    const valorNumerico = Number(precio);
+    if (Number.isNaN(valorNumerico)) return '-';
+    return Math.trunc(valorNumerico).toLocaleString('es-AR');
   };
 
   const productosFiltrados = productos.filter((producto: Producto) => {
@@ -710,7 +717,7 @@ const categorias: CategoriasConfig = {
                       display: 'block',
                     }}
                   >
-                    ${parseFloat(String(producto.precio)).toFixed(2)}
+                    ${formatearPrecioSinCentavos(producto.precio)}
                   </span>
 
                   {/* Botón WhatsApp por producto */}
@@ -942,10 +949,7 @@ const categorias: CategoriasConfig = {
                     margin: '0 0 20px 0',
                   }}
                 >
-                  $
-                  {parseFloat(
-                    String(productoSeleccionado.precio)
-                  ).toFixed(2)}
+                  ${formatearPrecioSinCentavos(productoSeleccionado.precio)}
                 </p>
 
                 {productoSeleccionado.categoria && (

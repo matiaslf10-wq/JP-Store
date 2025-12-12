@@ -304,7 +304,7 @@ export default function ListaProductos() {
                           width: '100%',
                           padding: '8px',
                           marginBottom: '10px',
-                          border: '1px solid '#ddd',
+                          border: '1px solid #ddd',
                           borderRadius: '4px',
                         }}
                       />

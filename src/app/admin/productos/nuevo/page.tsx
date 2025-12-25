@@ -144,9 +144,10 @@ export default function AgregarProducto() {
       setMensaje(`¡${archivos.length} imagen(es) subida(s) exitosamente!`);
       setSubiendoImagen(false);
       e.target.value = '';
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      setMensaje(`Error al subir imágenes: ${error.message || error}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      setMensaje(`Error al subir imágenes: ${errorMessage}`);
       setSubiendoImagen(false);
     }
   };
@@ -218,9 +219,10 @@ export default function AgregarProducto() {
       setTimeout(() => {
         window.location.href = '/admin/productos';
       }, 2000);
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      setMensaje(`Error al guardar: ${error?.message || 'Error desconocido'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      setMensaje(`Error al guardar: ${errorMessage}`);
       setCargando(false);
     }
   };
@@ -648,6 +650,7 @@ export default function AgregarProducto() {
               >
                 {producto.imagenes.map((url, index) => (
                   <div key={index} style={{ position: 'relative' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={url}
                       alt={`Imagen ${index + 1}`}

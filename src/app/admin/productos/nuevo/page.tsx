@@ -1,18 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+type TipoTalle = 'sin_talle' | 'ropa' | 'calzado' | 'deportes';
+
+interface Producto {
+  nombre: string;
+  precio: string;
+  descripcion: string;
+  categoria: string;
+  subcategoria: string;
+  imagenes: string[];
+  talles: string[];
+  tipo_talle: TipoTalle;
+}
+
 export default function AgregarProducto() {
   const [montado, setMontado] = useState(false);
-  const [producto, setProducto] = useState({
+  const [producto, setProducto] = useState<Producto>({
     nombre: '',
-    precio: '',        // string solo dígitos
+    precio: '',
     descripcion: '',
     categoria: '',
     subcategoria: '',
@@ -31,7 +44,7 @@ export default function AgregarProducto() {
     '40', '41', '42', '43', '44', '45'
   ];
 
-  const subcategoriasPorTipo = {
+  const subcategoriasPorTipo: Record<TipoTalle, string[]> = {
     ropa: ['Hombre', 'Mujer', 'Niños'],
     calzado: ['Hombre', 'Mujer', 'Niños'],
     deportes: ['Indumentaria', 'Calzado'],
@@ -44,8 +57,7 @@ export default function AgregarProducto() {
 
   if (!montado) return null;
 
-  // Detecta qué talles mostrar según tipo_talle y subcategoría
-  const obtenerTallesDisponibles = () => {
+  const obtenerTallesDisponibles = (): string[] => {
     if (producto.tipo_talle === 'deportes') {
       if (producto.subcategoria === 'Indumentaria') return tallesRopa;
       if (producto.subcategoria === 'Calzado') return tallesCalzado;
@@ -56,22 +68,24 @@ export default function AgregarProducto() {
     return [];
   };
 
-  const toggleTalle = (talle) => {
-    const tallesActuales = producto.talles || [];
-    if (tallesActuales.includes(talle)) {
-      setProducto({
-        ...producto,
-        talles: tallesActuales.filter((t) => t !== talle),
-      });
-    } else {
-      setProducto({
-        ...producto,
-        talles: [...tallesActuales, talle],
-      });
-    }
+  const toggleTalle = (talle: string) => {
+    setProducto((prev) => {
+      const tallesActuales = prev.talles || [];
+      if (tallesActuales.includes(talle)) {
+        return {
+          ...prev,
+          talles: tallesActuales.filter((t) => t !== talle),
+        };
+      } else {
+        return {
+          ...prev,
+          talles: [...tallesActuales, talle],
+        };
+      }
+    });
   };
 
-  const cambiarTipoTalle = (tipo) => {
+  const cambiarTipoTalle = (tipo: TipoTalle) => {
     let categoria = '';
     if (tipo === 'ropa') categoria = 'Ropa';
     else if (tipo === 'calzado') categoria = 'Calzado';
@@ -87,7 +101,7 @@ export default function AgregarProducto() {
     }));
   };
 
-  const subirImagenes = async (e) => {
+  const subirImagenes = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -96,7 +110,7 @@ export default function AgregarProducto() {
     setMensaje(`Subiendo ${archivos.length} imagen(es)...`);
 
     try {
-      const urlsSubidas = [];
+      const urlsSubidas: string[] = [];
 
       for (const archivo of archivos) {
         const extension = archivo.name.split('.').pop();
@@ -130,19 +144,21 @@ export default function AgregarProducto() {
       setMensaje(`¡${archivos.length} imagen(es) subida(s) exitosamente!`);
       setSubiendoImagen(false);
       e.target.value = '';
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setMensaje(`Error al subir imágenes: ${error.message || error}`);
       setSubiendoImagen(false);
     }
   };
 
-  const eliminarImagen = (index) => {
-    const nuevasImagenes = producto.imagenes.filter((_, i) => i !== index);
-    setProducto({ ...producto, imagenes: nuevasImagenes });
+  const eliminarImagen = (index: number) => {
+    setProducto((prev) => ({
+      ...prev,
+      imagenes: prev.imagenes.filter((_, i) => i !== index),
+    }));
   };
 
-  const guardarProducto = async (e) => {
+  const guardarProducto = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (producto.imagenes.length === 0) {
@@ -160,7 +176,6 @@ export default function AgregarProducto() {
       return;
     }
 
-    // Precio entero obligatorio
     const precioEntero = parseInt(producto.precio || '0', 10);
     if (Number.isNaN(precioEntero) || precioEntero <= 0) {
       setMensaje('El precio debe ser un número entero mayor a 0 (sin centavos)');
@@ -174,7 +189,7 @@ export default function AgregarProducto() {
       const { error } = await supabase.from('productos').insert([
         {
           nombre: producto.nombre,
-          precio: precioEntero, // 👈 se guarda como entero
+          precio: precioEntero,
           descripcion: producto.descripcion,
           categoria: producto.categoria,
           subcategoria: producto.subcategoria || null,
@@ -203,7 +218,7 @@ export default function AgregarProducto() {
       setTimeout(() => {
         window.location.href = '/admin/productos';
       }, 2000);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setMensaje(`Error al guardar: ${error?.message || 'Error desconocido'}`);
       setCargando(false);
@@ -238,7 +253,7 @@ export default function AgregarProducto() {
             required
             value={producto.nombre}
             onChange={(e) =>
-              setProducto({ ...producto, nombre: e.target.value })
+              setProducto((prev) => ({ ...prev, nombre: e.target.value }))
             }
             style={{
               width: '100%',
@@ -251,7 +266,7 @@ export default function AgregarProducto() {
           />
         </div>
 
-        {/* Precio (solo enteros) */}
+        {/* Precio */}
         <div style={{ marginBottom: '20px' }}>
           <label
             style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}
@@ -266,7 +281,7 @@ export default function AgregarProducto() {
             value={producto.precio}
             onChange={(e) => {
               const soloDigitos = e.target.value.replace(/[^\d]/g, '');
-              setProducto({ ...producto, precio: soloDigitos });
+              setProducto((prev) => ({ ...prev, precio: soloDigitos }));
             }}
             style={{
               width: '100%',
@@ -282,7 +297,7 @@ export default function AgregarProducto() {
           </p>
         </div>
 
-        {/* Tipo de producto + subcategoría */}
+        {/* Tipo de producto */}
         <div style={{ marginBottom: '20px' }}>
           <label
             style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}
@@ -400,11 +415,12 @@ export default function AgregarProducto() {
                 required
                 value={producto.subcategoria}
                 onChange={(e) => {
-                  setProducto({
-                    ...producto,
-                    subcategoria: e.target.value,
+                  const nuevoValor = e.target.value;
+                  setProducto((prev) => ({
+                    ...prev,
+                    subcategoria: nuevoValor,
                     talles: [],
-                  });
+                  }));
                 }}
                 style={{
                   width: '100%',
@@ -468,7 +484,7 @@ export default function AgregarProducto() {
           <textarea
             value={producto.descripcion}
             onChange={(e) =>
-              setProducto({ ...producto, descripcion: e.target.value })
+              setProducto((prev) => ({ ...prev, descripcion: e.target.value }))
             }
             rows={4}
             style={{

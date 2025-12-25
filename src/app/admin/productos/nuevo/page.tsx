@@ -403,7 +403,7 @@ export default function AgregarProducto() {
           {(producto.tipo_talle === 'ropa' ||
             producto.tipo_talle === 'calzado' ||
             producto.tipo_talle === 'deportes') && (
-            <div style={{ marginBottom: '15px' }}>
+            <div style={{ marginBottom: '15px' }} key={`subcategoria-${producto.tipo_talle}`}>
               <label
                 style={{
                   display: 'block',
@@ -502,94 +502,94 @@ export default function AgregarProducto() {
         </div>
 
         {/* Talles */}
-        <div style={{ marginBottom: '20px' }}>
-          {producto.tipo_talle !== 'sin_talle' && producto.subcategoria && (
-            <>
-              <label
+        {producto.tipo_talle !== 'sin_talle' && producto.subcategoria && (
+          <div style={{ marginBottom: '20px' }} key={`talles-${producto.tipo_talle}-${producto.subcategoria}`}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                color: '#666',
+              }}
+            >
+              {producto.tipo_talle === 'calzado' ||
+              (producto.tipo_talle === 'deportes' &&
+                producto.subcategoria === 'Calzado')
+                ? 'Números Disponibles'
+                : 'Talles Disponibles'}
+            </label>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(6, 1fr)',
+                gap: '8px',
+              }}
+            >
+              {obtenerTallesDisponibles().map((talle) => {
+                const estaSeleccionado =
+                  producto.talles && producto.talles.includes(talle);
+                return (
+                  <button
+                    key={`${producto.tipo_talle}-${producto.subcategoria}-${talle}`}
+                    type="button"
+                    onClick={() => toggleTalle(talle)}
+                    style={{
+                      padding: '10px',
+                      border: `2px solid ${
+                        estaSeleccionado ? '#4CAF50' : '#ddd'
+                      }`,
+                      backgroundColor: estaSeleccionado ? '#4CAF50' : 'white',
+                      color: estaSeleccionado ? 'white' : '#333',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {talle} {estaSeleccionado && '✓'}
+                  </button>
+                );
+              })}
+            </div>
+
+            {producto.talles && producto.talles.length > 0 && (
+              <p
                 style={{
-                  display: 'block',
-                  marginBottom: '8px',
+                  marginTop: '10px',
                   fontSize: '14px',
-                  color: '#666',
+                  color: '#4CAF50',
+                  fontWeight: '500',
                 }}
               >
+                ✓ {producto.talles.length}{' '}
                 {producto.tipo_talle === 'calzado' ||
                 (producto.tipo_talle === 'deportes' &&
                   producto.subcategoria === 'Calzado')
-                  ? 'Números Disponibles'
-                  : 'Talles Disponibles'}
-              </label>
+                  ? 'números'
+                  : 'talles'}{' '}
+                seleccionados:{' '}
+                {producto.talles
+                  .slice()
+                  .sort((a, b) => {
+                    if (
+                      producto.tipo_talle === 'calzado' ||
+                      (producto.tipo_talle === 'deportes' &&
+                        producto.subcategoria === 'Calzado')
+                    ) {
+                      return parseInt(a) - parseInt(b);
+                    }
+                    return 0;
+                  })
+                  .join(', ')}
+              </p>
+            )}
+          </div>
+        )}
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(6, 1fr)',
-                  gap: '8px',
-                }}
-              >
-                {obtenerTallesDisponibles().map((talle) => {
-                  const estaSeleccionado =
-                    producto.talles && producto.talles.includes(talle);
-                  return (
-                    <button
-                      key={talle}
-                      type="button"
-                      onClick={() => toggleTalle(talle)}
-                      style={{
-                        padding: '10px',
-                        border: `2px solid ${
-                          estaSeleccionado ? '#4CAF50' : '#ddd'
-                        }`,
-                        backgroundColor: estaSeleccionado ? '#4CAF50' : 'white',
-                        color: estaSeleccionado ? 'white' : '#333',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      {talle} {estaSeleccionado && '✓'}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {producto.talles && producto.talles.length > 0 && (
-                <p
-                  style={{
-                    marginTop: '10px',
-                    fontSize: '14px',
-                    color: '#4CAF50',
-                    fontWeight: '500',
-                  }}
-                >
-                  ✓ {producto.talles.length}{' '}
-                  {producto.tipo_talle === 'calzado' ||
-                  (producto.tipo_talle === 'deportes' &&
-                    producto.subcategoria === 'Calzado')
-                    ? 'números'
-                    : 'talles'}{' '}
-                  seleccionados:{' '}
-                  {producto.talles
-                    .slice()
-                    .sort((a, b) => {
-                      if (
-                        producto.tipo_talle === 'calzado' ||
-                        (producto.tipo_talle === 'deportes' &&
-                          producto.subcategoria === 'Calzado')
-                      ) {
-                        return parseInt(a) - parseInt(b);
-                      }
-                      return 0;
-                    })
-                    .join(', ')}
-                </p>
-              )}
-            </>
-          )}
-
-          {producto.tipo_talle !== 'sin_talle' && !producto.subcategoria && (
+        {producto.tipo_talle !== 'sin_talle' && !producto.subcategoria && (
+          <div style={{ marginBottom: '20px' }}>
             <p
               style={{
                 padding: '12px',
@@ -604,8 +604,8 @@ export default function AgregarProducto() {
               ⚠️ Primero selecciona una subcategoría para ver los talles
               disponibles
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Imágenes */}
         <div style={{ marginBottom: '20px' }}>
@@ -649,7 +649,7 @@ export default function AgregarProducto() {
                 }}
               >
                 {producto.imagenes.map((url, index) => (
-                  <div key={index} style={{ position: 'relative' }}>
+                  <div key={`imagen-${index}-${url}`} style={{ position: 'relative' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={url}
